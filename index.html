@@ -1,0 +1,1248 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Admin.Core | MineVerse</title>
+    <!-- Icon & Font -->
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- Supabase JS Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Firebase SDK (Ganti ke Firestore) -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    
+    <style>
+        :root {
+            --bg-color: #000000;
+            --text-main: #f5f5f7;
+            --text-muted: #86868b;
+            --accent: #0a84ff; 
+            --accent-bg: rgba(10, 132, 255, 0.15); 
+            --nav-bg: rgba(28, 28, 30, 0.75);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --success: #32d74b;
+            --danger: #ff453a;
+            --warning: #ff9f0a;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            background-size: 64px 64px; 
+            background-attachment: fixed; 
+            background-position: center top;
+            color: var(--text-main);
+            overflow-x: hidden;
+            user-select: none; 
+        }
+
+        .glow-bg {
+            position: fixed;
+            top: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100vw;
+            height: 400px;
+            background: radial-gradient(ellipse at top, rgba(255, 69, 58, 0.08), transparent 70%);
+            z-index: -1; 
+            pointer-events: none;
+        }
+
+        /* --- CUSTOM TOAST NOTIFICATION --- */
+        .custom-toast {
+            position: fixed;
+            top: -100px; 
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(28, 28, 30, 0.95);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-main);
+            padding: 14px 24px;
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 13px;
+            font-weight: 600;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+            z-index: 1000001; 
+            transition: top 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            pointer-events: none;
+        }
+
+        .custom-toast.show { top: 20px; }
+        .custom-toast i { font-size: 20px; }
+        .custom-toast.error i { color: var(--danger); }
+        .custom-toast.success i { color: var(--success); }
+        .custom-toast.info i { color: var(--accent); }
+
+        /* --- TOP HEADER --- */
+        .top-header {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 70px; 
+            background: rgba(18, 18, 18, 0.85); 
+            backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+            border-bottom: 1px solid var(--border-color);
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0 20px; z-index: 9999; 
+        }
+
+        .menu-btn {
+            background: transparent;
+            color: var(--text-main);
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        .header-brand {
+            display: flex; align-items: center; gap: 10px; 
+        }
+
+        .header-text {
+            font-size: 18px; font-weight: 700; color: var(--text-main); letter-spacing: -0.5px;
+        }
+        .header-text span { color: var(--danger); }
+
+        .admin-badge {
+            background: rgba(255, 69, 58, 0.15);
+            color: var(--danger);
+            font-size: 10px; font-weight: 700;
+            padding: 4px 8px; border-radius: 8px; letter-spacing: 0.5px;
+        }
+
+        /* --- SIDEBAR --- */
+        .sidebar-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
+            background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+            z-index: 10000; opacity: 0; visibility: hidden; transition: all 0.3s ease;
+        }
+        .sidebar-overlay.show { opacity: 1; visibility: visible; }
+
+        .sidebar {
+            position: fixed; top: 0; left: -280px; width: 280px; height: 100vh;
+            background: rgba(28, 28, 30, 0.95); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+            border-right: 1px solid var(--border-color);
+            z-index: 10001; transition: left 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            display: flex; flex-direction: column;
+        }
+        .sidebar.show { left: 0; }
+
+        .sidebar-header {
+            padding: 30px 20px; font-size: 20px; font-weight: 800; color: var(--text-main);
+            border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center;
+        }
+        .sidebar-close { font-size: 24px; color: var(--text-muted); cursor: pointer; }
+
+        .sidebar-menu { padding: 20px 10px; display: flex; flex-direction: column; gap: 8px; }
+        
+        .menu-item {
+            display: flex; align-items: center; gap: 12px; padding: 16px 20px;
+            color: var(--text-muted); font-size: 14px; font-weight: 600; border-radius: 16px; cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+        .menu-item i { font-size: 20px; }
+        .menu-item.active { background: rgba(255, 69, 58, 0.15); color: var(--danger); }
+        .menu-item:active { transform: scale(0.96); }
+
+        /* --- APP CONTAINER --- */
+        .app-container {
+            padding: 24px 20px; padding-top: 90px; min-height: 100vh;
+        }
+
+        .page-section { display: none; animation: smoothFade 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+        .page-section.active { display: block; }
+
+        @keyframes smoothFade {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section-title {
+            font-size: 22px; font-weight: 800; color: var(--text-main); margin-bottom: 20px;
+            display: flex; align-items: center; gap: 10px;
+        }
+
+        /* --- TOGGLE SWITCH UI --- */
+        .switch {
+            position: relative; display: inline-block; width: 44px; height: 24px; flex-shrink: 0;
+        }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(255, 255, 255, 0.1); border: 1px solid var(--border-color);
+            transition: .4s; border-radius: 24px;
+        }
+        .slider:before {
+            position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px;
+            background-color: var(--text-muted); transition: .4s; border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: rgba(50, 215, 75, 0.2); border-color: var(--success);
+        }
+        input:checked + .slider:before {
+            transform: translateX(20px); background-color: var(--success);
+        }
+
+        /* --- CARDS & LISTS --- */
+        .data-card {
+            background: rgba(28, 28, 30, 0.5); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color); border-radius: 20px; padding: 16px; margin-bottom: 16px;
+            display: flex; flex-direction: column; gap: 12px;
+            transition: transform 0.2s;
+        }
+
+        .card-header {
+            display: flex; justify-content: space-between; align-items: flex-start;
+            border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 12px;
+        }
+
+        .user-info { display: flex; align-items: center; gap: 12px; }
+        .user-avatar {
+            width: 40px; height: 40px; border-radius: 12px; background: rgba(255,255,255,0.1);
+            display: flex; justify-content: center; align-items: center; font-weight: 700; color: var(--text-main);
+        }
+        .user-name { font-size: 15px; font-weight: 700; color: var(--text-main); }
+        .user-pass { font-size: 11px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; margin-top: 2px;}
+
+        .card-body {
+            display: flex; justify-content: space-between; align-items: center;
+        }
+
+        .data-label { font-size: 10px; text-transform: uppercase; color: var(--text-muted); font-weight: 600; letter-spacing: 0.5px;}
+        .data-value { font-size: 18px; font-weight: 800; color: var(--success); font-family: 'JetBrains Mono', monospace; }
+
+        .btn-edit {
+            background: rgba(10, 132, 255, 0.15); color: var(--accent); border: none;
+            padding: 8px 16px; border-radius: 12px; font-size: 12px; font-weight: 700;
+            cursor: pointer; display: flex; align-items: center; gap: 6px; transition: transform 0.2s;
+        }
+        .btn-edit:active { transform: scale(0.9); }
+        
+        .btn-view-img {
+            background: rgba(255, 255, 255, 0.1); color: var(--text-main); border: 1px solid var(--border-color);
+            padding: 8px 16px; border-radius: 12px; font-size: 12px; font-weight: 700;
+            cursor: pointer; display: flex; align-items: center; gap: 6px; transition: transform 0.2s;
+            margin-top: 8px; width: 100%; justify-content: center;
+        }
+        .btn-view-img:active { transform: scale(0.96); background: rgba(255, 255, 255, 0.15); }
+
+        /* --- WD STATUS CARDS --- */
+        .wd-detail { font-size: 13px; color: var(--text-main); display: flex; flex-direction: column; gap: 4px; }
+        .wd-amount { font-size: 18px; font-weight: 800; font-family: 'JetBrains Mono', monospace; color: var(--text-main); }
+        .wd-method { font-size: 11px; color: var(--text-muted); }
+        
+        .gas-time { font-size: 11px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; margin-top: 4px; }
+        
+        .badge {
+            padding: 4px 8px; border-radius: 8px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .badge.pending { background: rgba(255, 159, 10, 0.15); color: var(--warning); }
+        .badge.success { background: rgba(50, 215, 75, 0.15); color: var(--success); }
+        .badge.rejected { background: rgba(255, 69, 58, 0.15); color: var(--danger); }
+
+        .action-row { display: flex; gap: 10px; margin-top: 12px; width: 100%; }
+        .btn-approve { flex: 1; background: rgba(50, 215, 75, 0.15); color: var(--success); border: 1px solid rgba(50, 215, 75, 0.3); padding: 10px; border-radius: 12px; font-weight: 700; font-size: 13px; cursor: pointer; transition: 0.2s; display: flex; justify-content: center; align-items: center; gap: 4px;}
+        .btn-reject { flex: 1; background: rgba(255, 69, 58, 0.15); color: var(--danger); border: 1px solid rgba(255, 69, 58, 0.3); padding: 10px; border-radius: 12px; font-weight: 700; font-size: 13px; cursor: pointer; transition: 0.2s; display: flex; justify-content: center; align-items: center; gap: 4px;}
+        .btn-approve:active, .btn-reject:active { transform: scale(0.95); }
+
+        /* --- MODALS --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            z-index: 10000; display: none; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s;
+        }
+        .modal-overlay.show { display: flex; opacity: 1; }
+
+        .modal-card {
+            background: rgba(28, 28, 30, 0.85); border: 1px solid var(--border-color);
+            border-radius: 28px; padding: 24px; width: 90%; max-width: 320px;
+            transform: translateY(20px) scale(0.95); transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+        .modal-overlay.show .modal-card { transform: translateY(0) scale(1); }
+
+        .modal-title { font-size: 16px; font-weight: 700; color: var(--text-main); margin-bottom: 16px; display: flex; align-items: center; justify-content: center; gap: 8px;}
+        
+        .input-glass {
+            width: 100%; padding: 16px; border-radius: 16px; border: 1px solid var(--border-color);
+            background: rgba(255, 255, 255, 0.03); color: var(--text-main); outline: none;
+            font-family: 'JetBrains Mono', monospace; font-size: 16px; transition: all 0.3s ease; margin-bottom: 20px;
+        }
+        .input-glass:focus { border-color: var(--accent); background: rgba(10, 132, 255, 0.05); }
+
+        .btn-primary {
+            width: 100%; padding: 14px; border-radius: 14px; background: var(--accent); color: white;
+            border: none; font-size: 14px; font-weight: 700; cursor: pointer;
+        }
+        .btn-secondary {
+            width: 100%; padding: 14px; border-radius: 14px; background: rgba(255, 255, 255, 0.1); color: var(--text-main);
+            border: none; font-size: 14px; font-weight: 700; cursor: pointer;
+        }
+        
+        .proof-img {
+            width: 100%; height: auto; max-height: 400px; object-fit: contain; border-radius: 12px; margin-bottom: 20px;
+            background: rgba(0,0,0,0.5);
+        }
+
+        /* --- EMPTY STATE --- */
+        .empty-state {
+            text-align: center; padding: 40px 20px; color: var(--text-muted); font-size: 13px; font-style: italic;
+        }
+        .loading-spinner {
+            border: 3px solid rgba(255,255,255,0.1); border-top: 3px solid var(--danger);
+            border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; margin: 0 auto 10px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* --- CUSTOMER SERVICE CHAT UI (ADMIN) --- */
+        .chat-bubble {
+            max-width: 80%;
+            padding: 12px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            line-height: 1.5;
+            word-wrap: break-word;
+            position: relative;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .chat-bubble.user {
+            align-self: flex-end;
+            background: var(--accent);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .chat-bubble.admin {
+            align-self: flex-start;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-bottom-left-radius: 4px;
+        }
+
+        /* --- API CONFIG CSS --- */
+        .config-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            display: block;
+        }
+        .config-input {
+            width: 100%;
+            padding: 14px 16px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-main);
+            outline: none;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+        .config-input:focus {
+            border-color: #32d74b;
+            background: rgba(50, 215, 75, 0.05);
+        }
+        
+        /* BAWAHAN LIST LIST ITEM */
+        .dl-list-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .dl-list-item:last-child { border-bottom: none; }
+    </style>
+</head>
+<body>
+
+    <div class="glow-bg"></div>
+
+    <!-- TOAST -->
+    <div id="custom-toast" class="custom-toast">
+        <i class='bx bx-info-circle'></i>
+        <span id="toast-msg">Sistem...</span>
+    </div>
+
+    <!-- HEADER -->
+    <header class="top-header">
+        <div class="header-brand">
+            <button class="menu-btn" onclick="toggleSidebar()"><i class='bx bx-menu'></i></button>
+            <div class="header-text">MineVerse<span>.Admin</span></div>
+        </div>
+        <div class="admin-badge">ROOT</div>
+    </header>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            Control Panel <i class='bx bx-x sidebar-close' onclick="toggleSidebar()"></i>
+        </div>
+        <div class="sidebar-menu">
+            <div class="menu-item active" id="nav-users" onclick="navTo('users')">
+                <i class='bx bx-user'></i> Network Node ID
+            </div>
+            
+            <div class="menu-item" id="nav-affiliators" onclick="navTo('affiliators')">
+                <i class='bx bx-network-chart'></i> Direktori Afiliator
+            </div>
+
+            <div class="menu-item" id="nav-gas" onclick="navTo('gas')">
+                <i class='bx bx-receipt'></i> Pembayaran Gas Fee
+            </div>
+            <div class="menu-item" id="nav-wd" onclick="navTo('wd')">
+                <i class='bx bx-money-withdraw'></i> Approval Withdraw
+            </div>
+            <div class="menu-item" id="nav-aff" onclick="navTo('aff')">
+                <i class='bx bx-gift'></i> Pencairan Komisi Afiliasi
+            </div>
+            <div class="menu-item" id="nav-cs" onclick="navTo('cs')">
+                <i class='bx bx-message-dots'></i> Customer Service
+                <div id="sidebar-cs-badge" style="display:none; background:var(--danger); color:white; font-size:10px; font-weight:800; padding:2px 6px; border-radius:10px; position:absolute; right:20px;"></div>
+            </div>
+            <div class="menu-item" id="nav-api" onclick="navTo('api')">
+                <i class='bx bx-cog'></i> Konfigurasi API
+            </div>
+
+            <div class="menu-item" style="margin-top: auto; color: var(--danger);" onclick="adminLogout()">
+                <i class='bx bx-log-out'></i> Keluar Admin
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL EDIT SALDO -->
+    <div class="modal-overlay" id="editModal">
+        <div class="modal-card">
+            <div class="modal-title"><i class='bx bx-edit'></i> Edit Saldo Node</div>
+            <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 8px;">Target ID: <strong id="editTargetId" style="color:var(--text-main);"></strong></div>
+            <input type="number" step="0.0001" id="editSaldoInput" class="input-glass" placeholder="0.0000">
+            <div style="display: flex; gap: 10px;">
+                <button class="btn-secondary" onclick="closeModal('editModal')">Batal</button>
+                <button class="btn-primary" onclick="saveSaldo()">Simpan</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- MODAL VIEW BUKTI TRANSFER -->
+    <div class="modal-overlay" id="proofModal">
+        <div class="modal-card" style="max-width: 360px;">
+            <div class="modal-title"><i class='bx bx-image'></i> Bukti Pembayaran</div>
+            <img id="proofImageDisplay" src="" alt="Bukti Transfer" class="proof-img">
+            <button class="btn-secondary" onclick="closeModal('proofModal')">Tutup</button>
+        </div>
+    </div>
+
+    <!-- MODAL DAFTAR BAWAHAN AFILIATOR -->
+    <div class="modal-overlay" id="downlineModal">
+        <div class="modal-card" style="max-width: 400px; padding: 24px;">
+            <div class="modal-title"><i class='bx bx-network-chart'></i> Daftar Bawahan Node</div>
+            <div id="downline-modal-list" style="max-height: 350px; overflow-y: auto; padding-right: 4px;">
+                <!-- Diisi oleh JS -->
+            </div>
+            <button class="btn-secondary" style="margin-top:20px;" onclick="closeModal('downlineModal')">Tutup</button>
+        </div>
+    </div>
+
+    <!-- APP CONTAINER -->
+    <div class="app-container">
+        <!-- PAGE: USERS (NETWORK NODE) -->
+        <section id="page-users" class="page-section active">
+            <div class="section-title"><i class='bx bx-user'></i> Direktori Node Jaringan</div>
+            
+            <div id="users-container">
+                <div class="empty-state">
+                    <div class="loading-spinner"></div>
+                    Memuat data Node ID dari Supabase...
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE: DIREKTORI AFILIATOR (KHUSUS VERIFIED) -->
+        <section id="page-affiliators" class="page-section">
+            <div class="section-title"><i class='bx bx-network-chart'></i> Direktori Afiliator</div>
+            
+            <div id="affiliators-container">
+                <div class="empty-state">
+                    <div class="loading-spinner"></div>
+                    Memuat data Afiliator dari Supabase...
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE: GAS FEE -->
+        <section id="page-gas" class="page-section">
+            <div class="section-title"><i class='bx bx-receipt'></i> Pembayaran Gas Fee</div>
+            
+            <div id="gas-container">
+                <div class="empty-state">
+                    <div class="loading-spinner"></div>
+                    Memuat data pembayaran dari Supabase...
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE: WITHDRAWALS (USD) -->
+        <section id="page-wd" class="page-section">
+            <div class="section-title"><i class='bx bx-transfer'></i> Antrean Withdrawal (Saldo)</div>
+            
+            <div id="wd-container">
+                <div class="empty-state">
+                    <div class="loading-spinner"></div>
+                    Memuat data antrean dari Supabase...
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE: AFILIATOR (KOMISI RP) -->
+        <section id="page-aff" class="page-section">
+            <div class="section-title"><i class='bx bx-gift'></i> Pencairan Komisi Afiliasi</div>
+            
+            <div id="aff-wd-container">
+                <div class="empty-state">
+                    <div class="loading-spinner"></div>
+                    Memuat data pengajuan komisi dari Supabase...
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE: CUSTOMER SERVICE -->
+        <section id="page-cs" class="page-section">
+            <div class="section-title"><i class='bx bx-headphone'></i> Pesan Dukungan Masuk</div>
+            <div id="cs-list-container">
+                <div class="empty-state">
+                    <div class="loading-spinner"></div>
+                    Memuat daftar pesan dari Firestore...
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE: KONFIGURASI API -->
+        <section id="page-api" class="page-section">
+            <div class="section-title"><i class='bx bx-cog'></i> Konfigurasi API (EmailJS)</div>
+            
+            <div class="data-card" style="padding: 24px;">
+                <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 24px; line-height: 1.5;">
+                    Ubah data API Key EmailJS di bawah ini untuk menghubungkan sistem pengiriman OTP ke akun EmailJS yang baru. Perubahan akan langsung berdampak ke seluruh User.
+                </div>
+
+                <label class="config-label">EmailJS Public Key</label>
+                <input type="text" id="api-public-key" class="config-input" placeholder="Memuat...">
+
+                <label class="config-label">EmailJS Service ID</label>
+                <input type="text" id="api-service-id" class="config-input" placeholder="Memuat...">
+
+                <label class="config-label">EmailJS Template ID</label>
+                <input type="text" id="api-template-id" class="config-input" placeholder="Memuat...">
+
+                <button class="btn-primary" style="background: #32d74b; color: black; display: flex; align-items: center; justify-content: center; gap: 8px;" onclick="saveApiConfig()">
+                    <i class='bx bx-save' style="font-size: 18px;"></i> Simpan Konfigurasi
+                </button>
+            </div>
+        </section>
+
+    </div> <!-- Penutup dari .app-container -->
+
+    <!-- MODAL BALAS CHAT (FULL OVERLAY) -->
+    <div id="admin-chat-modal" style="z-index: 100000; position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: var(--bg-color); display: none; flex-direction: column;">
+        <div style="padding: 20px; background: rgba(18, 18, 18, 0.85); backdrop-filter: blur(24px); border-bottom: 1px solid var(--border-color); display: flex; align-items: center; position: sticky; top: 0; z-index: 10;">
+            <i class='bx bx-left-arrow-alt' style="font-size: 26px; color: var(--text-main); margin-right: 16px; cursor: pointer;" onclick="closeAdminChat()"></i>
+            <div style="font-size: 16px; font-weight: 700; color: var(--text-main);">Node: <span id="admin-chat-target" style="color: var(--accent);"></span></div>
+        </div>
+        
+        <div id="admin-chat-box" style="flex: 1; padding: 20px; padding-bottom: 120px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; height: 100%;">
+            <!-- Bubbles diproses JS -->
+        </div>
+        
+        <div style="position: fixed; bottom: 0; left: 0; width: 100%; padding: 16px 20px; background: rgba(18, 18, 18, 0.85); backdrop-filter: blur(24px); border-top: 1px solid var(--border-color); display: flex; gap: 10px; z-index: 100;">
+            <input type="text" id="admin-cs-input" class="input-glass" placeholder="Balas pesan user..." style="padding: 14px 16px; border-radius: 20px; margin-bottom: 0;">
+            <button class="btn-primary" style="width: 50px; height: 50px; border-radius: 50%; display: flex; justify-content: center; align-items: center; flex-shrink: 0; padding: 0;" onclick="sendChatAdmin()">
+                <i class='bx bx-send' style="font-size: 20px; margin-left: 4px;"></i>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // --- INISIALISASI FIRESTORE (Customer Service Chat) ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyB0THAs7_KFJgYQ1k0spzLt3dp_GfGyiQw",
+            authDomain: "mineverse-15844.firebaseapp.com",
+            projectId: "mineverse-15844",
+            storageBucket: "mineverse-15844.firebasestorage.app",
+            messagingSenderId: "682340837814",
+            appId: "1:682340837814:web:cb3493453f97439973b917"
+        };
+        
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const dbChat = firebase.firestore();
+
+        // --- TOAST FUNCTION ---
+        let toastTimeout;
+        function showToast(msg, type = 'info') {
+            const toast = document.getElementById('custom-toast');
+            const toastMsg = document.getElementById('toast-msg');
+            const icon = toast.querySelector('i');
+
+            toast.className = 'custom-toast'; 
+            if (type === 'error') { toast.classList.add('error'); icon.className = 'bx bxs-error-circle'; } 
+            else if (type === 'success') { toast.classList.add('success'); icon.className = 'bx bxs-check-circle'; } 
+            else { toast.classList.add('info'); icon.className = 'bx bxs-info-circle'; }
+
+            toastMsg.innerText = msg;
+            toast.classList.add('show');
+
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => { toast.classList.remove('show'); }, 3000);
+        }
+
+        // --- SIDEBAR & NAV LOGIC ---
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('show');
+            document.getElementById('sidebarOverlay').classList.toggle('show');
+        }
+
+        function navTo(page) {
+            document.querySelectorAll('.page-section').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
+
+            document.getElementById("page-" + page).classList.add('active');
+            document.getElementById("nav-" + page).classList.add('active');
+            
+            toggleSidebar();
+            
+            if(page === 'users') loadUsers();
+            if(page === 'affiliators') loadAffiliators();
+            if(page === 'gas') loadGasPayments();
+            if(page === 'wd') loadWithdrawals();
+            if(page === 'aff') loadAffWithdrawals();
+            // cs load otomatis via listener
+            if(page === 'api') loadApiConfig(); 
+        }
+
+        function adminLogout() {
+            showToast('Sesi admin diakhiri', 'info');
+            setTimeout(() => { window.location.href = 'index.html'; }, 1000); 
+        }
+
+        function copyText(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                showToast("Berhasil disalin!", "success");
+            });
+        }
+
+        // --- MODAL UTILS ---
+        function openModal(id) { document.getElementById(id).classList.add('show'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+
+        // --- SUPABASE INIT ---
+        const supabaseUrl = 'https://fzwcwgjugldqyhhngkif.supabase.co';
+        const supabaseKey = 'sb_publishable_vMraMm5IDQr7tpcMDcc_-g_Ft7zcSCh';
+        const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
+        let globalUsersData = []; // Simpan data user secara global buat modal afiliator
+
+        // --- 0. API CONFIGURATION LOGIC ---
+        async function loadApiConfig() {
+            const pubKeyInput = document.getElementById('api-public-key');
+            const svcIdInput = document.getElementById('api-service-id');
+            const tplIdInput = document.getElementById('api-template-id');
+
+            showToast("Memuat konfigurasi...", "info");
+
+            const { data, error } = await supabaseClient.from('app_settings').select('*').eq('id', 1).single();
+
+            if (error || !data) return showToast("Gagal memuat konfigurasi API", "error");
+
+            pubKeyInput.value = data.emailjs_public_key || "";
+            svcIdInput.value = data.emailjs_service_id || "";
+            tplIdInput.value = data.emailjs_template_id || "";
+        }
+
+        async function saveApiConfig() {
+            const pubKey = document.getElementById('api-public-key').value.trim();
+            const svcId = document.getElementById('api-service-id').value.trim();
+            const tplId = document.getElementById('api-template-id').value.trim();
+
+            if (!pubKey || !svcId || !tplId) return showToast("Semua kolom API harus diisi!", "error");
+
+            showToast("Menyimpan konfigurasi...", "info");
+
+            const { error } = await supabaseClient.from('app_settings').update({
+                    emailjs_public_key: pubKey, emailjs_service_id: svcId, emailjs_template_id: tplId
+            }).eq('id', 1);
+
+            if (error) showToast("Gagal menyimpan: " + error.message, "error");
+            else showToast("Konfigurasi API berhasil diperbarui!", "success");
+        }
+
+        // --- 1. USERS MANAGEMENT (SEMUA USER) ---
+        async function loadUsers() {
+            const container = document.getElementById('users-container');
+            container.innerHTML = `<div class="empty-state"><div class="loading-spinner"></div>Sinkronisasi ke Database...</div>`;
+
+            const { data, error } = await supabaseClient.from('users').select('*').order('node_id', { ascending: true });
+
+            if (error) return container.innerHTML = `<div class="empty-state" style="color:var(--danger)">Gagal memuat data: ` + error.message + `</div>`;
+            if (!data || data.length === 0) return container.innerHTML = `<div class="empty-state">Belum ada Node ID yang terdaftar di jaringan.</div>`;
+            
+            globalUsersData = data; 
+            container.innerHTML = '';
+            
+            data.forEach(user => {
+                let initial = user.node_id ? user.node_id.charAt(0).toUpperCase() : '?';
+                let saldoFormat = parseFloat(user.saldo || 0).toFixed(4);
+                
+                let isChecked = user.is_verified ? "checked" : "";
+                let statusText = user.is_verified ? "Verified" : "Unverified";
+                let statusColor = user.is_verified ? "var(--success)" : "var(--warning)";
+                
+                let toggleHTML = `
+                    <div style="display:flex; align-items:center; gap:8px; margin-left:auto;">
+                        <span style="font-size:10px; font-weight:700; color:` + statusColor + `;">` + statusText + `</span>
+                        <label class="switch">
+                            <input type="checkbox" onchange="toggleVerif('` + user.node_id + `', ` + user.is_verified + `)" ` + isChecked + `>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                `;
+                
+                let card = document.createElement('div');
+                card.className = 'data-card';
+                card.innerHTML = `
+                    <div class="card-header" style="align-items:center;">
+                        <div class="user-info">
+                            <div class="user-avatar">` + initial + `</div>
+                            <div>
+                                <div class="user-name">` + user.node_id + `</div>
+                                <div class="user-pass" style="display:flex; align-items:center; gap:4px;">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px; height:12px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg> 
+                                    ${user.password} 
+                                    <i class='bx bx-copy' style="cursor:pointer; color:var(--accent);" onclick="copyText('${user.password}')"></i>
+                                </div>
+                            </div>
+                        </div>
+                        ` + toggleHTML + `
+                    </div>
+                    <div class="card-body" style="padding-top: 12px;">
+                        <div>
+                            <div class="data-label">Total Saldo USD</div>
+                            <div class="data-value">$` + saldoFormat + `</div>
+                        </div>
+                        <button class="btn-edit" onclick="openEditModal('` + user.node_id + `', ` + (user.saldo || 0) + `)">
+                            <i class='bx bx-edit-alt'></i> Edit Saldo
+                        </button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // --- 1.B AFILIATOR MANAGEMENT (KHUSUS VERIFIED) ---
+        async function loadAffiliators() {
+            const container = document.getElementById('affiliators-container');
+            container.innerHTML = `<div class="empty-state"><div class="loading-spinner"></div>Sinkronisasi Direktori Afiliator...</div>`;
+
+            const { data, error } = await supabaseClient.from('users').select('*').order('node_id', { ascending: true });
+
+            if (error) return container.innerHTML = `<div class="empty-state" style="color:var(--danger)">Gagal memuat data: ` + error.message + `</div>`;
+            if (!data || data.length === 0) return container.innerHTML = `<div class="empty-state">Belum ada user di jaringan.</div>`;
+            
+            globalUsersData = data;
+            
+            // Filter KHUSUS yang is_verified = true
+            let verifiedUsers = data.filter(u => u.is_verified);
+            
+            if (verifiedUsers.length === 0) {
+                container.innerHTML = `<div class="empty-state">Belum ada Node yang diverifikasi (Membayar Gas Fee). Akses Afiliator kosong.</div>`;
+                return;
+            }
+
+            container.innerHTML = '';
+            
+            verifiedUsers.forEach(user => {
+                let initial = user.node_id ? user.node_id.charAt(0).toUpperCase() : '?';
+                let refCode = user.ref_code || "Belum Ada";
+                
+                // MENGHITUNG STATISTIK BAWAHAN
+                let downlines = data.filter(u => u.referred_by === user.ref_code);
+                let totalDl = downlines.length;
+                let verifiedDl = downlines.filter(u => u.is_verified).length;
+                let totalAffiliateBalance = verifiedDl * 10000;
+                
+                let card = document.createElement('div');
+                card.className = 'data-card';
+                card.innerHTML = `
+                    <div class="card-header" style="align-items:center;">
+                        <div class="user-info">
+                            <div class="user-avatar" style="background: rgba(50, 215, 75, 0.15); color: #32d74b;">` + initial + `</div>
+                            <div>
+                                <div class="user-name">` + user.node_id + `</div>
+                                <div class="user-pass" style="color: #32d74b;"><i class='bx bx-check-circle'></i> Afiliator Aktif</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <div style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Kode Reff</div>
+                            <div style="font-size: 13px; font-weight: 700; color: var(--accent); font-family: 'JetBrains Mono', monospace; display:flex; align-items:center; gap:4px;">
+                                ` + refCode + ` <i class='bx bx-copy' style="cursor:pointer;" onclick="copyText('` + refCode + `')"></i>
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Bawahan Aktif</div>
+                            <div style="font-size: 13px; font-weight: 700; color: var(--text-main);"><span style="color:var(--success);">` + verifiedDl + ` Gas</span> / ` + totalDl + ` Total</div>
+                        </div>
+                    </div>
+
+                    <div class="card-body" style="padding-top: 12px;">
+                        <div>
+                            <div class="data-label">Potensi Saldo Afiliasi</div>
+                            <div class="data-value" style="color:var(--text-main); font-size:14px;">Rp ` + totalAffiliateBalance.toLocaleString('id-ID') + `</div>
+                        </div>
+                        <button class="btn-edit" style="background: rgba(50, 215, 75, 0.15); color: var(--success);" onclick="showDownlines('` + refCode + `')">
+                            <i class='bx bx-network-chart'></i> Lihat Bawahan
+                        </button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // --- MENAMPILKAN DAFTAR BAWAHAN (MODAL) ---
+        function showDownlines(refCode) {
+            if(!refCode || refCode === "Belum Ada") return showToast("Node ini belum punya kode referal.", "error");
+            
+            const listContainer = document.getElementById('downline-modal-list');
+            listContainer.innerHTML = '';
+            
+            let downlines = globalUsersData.filter(u => u.referred_by === refCode);
+            
+            if(downlines.length === 0) {
+                listContainer.innerHTML = `<div class="empty-state">Belum ada bawahan untuk kode ini.</div>`;
+            } else {
+                downlines.forEach(dl => {
+                    let stTxt = dl.is_verified ? "SUDAH GAS FEE" : "BELUM GAS FEE";
+                    let stColor = dl.is_verified ? "var(--success)" : "var(--warning)";
+                    let icon = dl.is_verified ? "<i class='bx bx-check-circle'></i>" : "<i class='bx bx-time'></i>";
+                    
+                    listContainer.innerHTML += `
+                        <div class="dl-list-item">
+                            <div>
+                                <div style="font-size:14px; font-weight:700; color:var(--text-main);">${dl.node_id}</div>
+                                <div style="font-size:10px; color:${stColor}; font-weight:600; margin-top:2px;">${icon} ${stTxt}</div>
+                            </div>
+                            <div style="font-size:13px; font-weight:700; font-family:'JetBrains Mono', monospace; color:${stColor};">
+                                ${dl.is_verified ? "+ Rp 10.000" : "Rp 0"}
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+            openModal('downlineModal');
+        }
+
+        async function toggleVerif(nodeId, currentStatus) {
+            let newStatus = !currentStatus;
+            showToast("Memperbarui status verifikasi...", "info");
+            
+            const { error } = await supabaseClient.from('users').update({ is_verified: newStatus }).eq('node_id', nodeId);
+
+            if(error) {
+                showToast("Gagal update status", "error");
+                loadUsers();
+            } else {
+                if(newStatus) showToast("Node " + nodeId + " berhasil diverifikasi.", "success");
+                else showToast("Verifikasi dicabut!", "success");
+                loadUsers();
+                if(document.getElementById('page-affiliators').classList.contains('active')) loadAffiliators();
+            }
+        }
+
+        let currentEditId = null;
+
+        function openEditModal(nodeId, currentSaldo) {
+            currentEditId = nodeId;
+            document.getElementById('editTargetId').innerText = nodeId;
+            document.getElementById('editSaldoInput').value = parseFloat(currentSaldo).toFixed(4);
+            openModal('editModal');
+        }
+
+        async function saveSaldo() {
+            if (!currentEditId) return;
+            const newVal = parseFloat(document.getElementById('editSaldoInput').value);
+
+            if (isNaN(newVal)) return showToast("Format saldo tidak valid", "error");
+
+            const { error } = await supabaseClient.from('users').update({ saldo: newVal }).eq('node_id', currentEditId);
+
+            if (error) {
+                showToast("Gagal update saldo: " + error.message, "error");
+            } else {
+                showToast("Saldo " + currentEditId + " berhasil diupdate!", "success");
+                closeModal('editModal');
+                loadUsers(); 
+            }
+        }
+
+        // --- 2. GAS FEE MANAGEMENT LOGIC ---
+        function viewProof(url) {
+            document.getElementById('proofImageDisplay').src = url;
+            openModal('proofModal');
+        }
+
+        async function loadGasPayments() {
+            const container = document.getElementById('gas-container');
+            container.innerHTML = `<div class="empty-state"><div class="loading-spinner"></div>Memuat data dari server...</div>`;
+
+            const { data, error } = await supabaseClient.from('gas_fee_payments').select('*').order('created_at', { ascending: false });
+
+            if (error) return container.innerHTML = `<div class="empty-state" style="color:var(--danger)">Gagal memuat data: ` + error.message + `</div>`;
+            if (!data || data.length === 0) return container.innerHTML = `<div class="empty-state">Tidak ada antrean pembayaran Gas Fee.</div>`;
+
+            container.innerHTML = '';
+            data.forEach(gas => {
+                let badgeClass = 'pending'; let badgeText = 'PENDING'; let actionHTML = '';
+                let dateObj = new Date(gas.created_at);
+                let timeStr = dateObj.toLocaleDateString('id-ID', {day:'2-digit', month:'short'}) + " • " + dateObj.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'}) + " WIB";
+
+                if (gas.status === 'success') { badgeClass = 'success'; badgeText = 'APPROVED'; } 
+                else if (gas.status === 'rejected') { badgeClass = 'rejected'; badgeText = 'REJECTED'; }
+
+                if (gas.status === 'pending') {
+                    actionHTML = `
+                        <div class="action-row">
+                            <button class="btn-approve" onclick="processGas(` + gas.id + `, 'approve', '` + gas.node_id + `')"><i class='bx bx-check'></i> Approve</button>
+                            <button class="btn-reject" onclick="processGas(` + gas.id + `, 'reject', '` + gas.node_id + `')"><i class='bx bx-x'></i> Reject</button>
+                        </div>
+                    `;
+                }
+
+                let card = document.createElement('div');
+                card.className = 'data-card';
+                card.innerHTML = `
+                    <div class="card-header" style="align-items: center;">
+                        <div class="wd-detail">
+                            <div style="font-weight: 800; font-size: 15px;">` + gas.node_id + `</div>
+                            <div class="gas-time">` + timeStr + `</div>
+                        </div>
+                        <div class="badge ` + badgeClass + `">` + badgeText + `</div>
+                    </div>
+                    <button class="btn-view-img" onclick="viewProof('` + gas.proof_url + `')">
+                        <i class='bx bx-search-alt'></i> Cek Foto Bukti
+                    </button>
+                    ` + actionHTML + `
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        async function processGas(id, action, node_id) {
+            let newStatus = action === 'approve' ? 'success' : 'rejected';
+
+            const { error: gasError } = await supabaseClient.from('gas_fee_payments').update({ status: newStatus }).eq('id', id);
+            if(gasError) return showToast("Gagal update status: " + gasError.message, "error");
+
+            if (action === 'approve') {
+                const { error: userErr } = await supabaseClient.from('users').update({ is_verified: true }).eq('node_id', node_id);
+                if(userErr) return showToast("Gagal memverifikasi user: " + userErr.message, "error");
+                showToast("Pembayaran disetujui. Node " + node_id + " TERVERIFIKASI!", "success");
+            } else {
+                showToast("Pembayaran Node " + node_id + " ditolak.", "error");
+            }
+            loadGasPayments(); 
+        }
+
+        // --- 3. WITHDRAWAL MANAGEMENT LOGIC (USD CLOUD BALANCE) ---
+        async function loadWithdrawals() {
+            const container = document.getElementById('wd-container');
+            container.innerHTML = `<div class="empty-state"><div class="loading-spinner"></div>Memuat data dari server...</div>`;
+
+            const { data, error } = await supabaseClient.from('withdrawals').select('*').order('created_at', { ascending: false });
+
+            if (error) return container.innerHTML = `<div class="empty-state" style="color:var(--danger)">Gagal memuat data: ` + error.message + `</div>`;
+            if (!data || data.length === 0) return container.innerHTML = `<div class="empty-state">Tidak ada antrean withdrawal saat ini.</div>`;
+
+            container.innerHTML = '';
+            data.forEach(wd => {
+                let badgeClass = 'pending'; let badgeText = 'PENDING'; let actionHTML = '';
+                if (wd.status === 'success') { badgeClass = 'success'; badgeText = 'APPROVED'; } 
+                else if (wd.status === 'rejected') { badgeClass = 'rejected'; badgeText = 'REJECTED'; }
+
+                if (wd.status === 'pending') {
+                    actionHTML = `
+                        <div class="action-row">
+                            <button class="btn-approve" onclick="processWd('` + wd.trx_id + `', 'approve', '` + wd.node_id + `', ` + wd.amount + `)"><i class='bx bx-check'></i> Approve</button>
+                            <button class="btn-reject" onclick="processWd('` + wd.trx_id + `', 'reject', '` + wd.node_id + `', ` + wd.amount + `)"><i class='bx bx-x'></i> Reject</button>
+                        </div>
+                    `;
+                }
+
+                let card = document.createElement('div');
+                card.className = 'data-card';
+                card.innerHTML = `
+                    <div class="card-header" style="padding-bottom: 8px;">
+                        <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); font-family: 'JetBrains Mono', monospace;">` + wd.trx_id + `</div>
+                        <div class="badge ` + badgeClass + `">` + badgeText + `</div>
+                    </div>
+                    <div class="card-body" style="align-items: flex-end; padding-top:8px;">
+                        <div class="wd-detail">
+                            <div style="font-weight: 700;">` + wd.node_id + `</div>
+                            <div class="wd-method">` + wd.method + ` • ` + wd.target + `</div>
+                        </div>
+                        <div class="wd-amount">$` + parseFloat(wd.amount).toFixed(2) + `</div>
+                    </div>
+                    ` + actionHTML + `
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        async function processWd(trx_id, action, node_id, amount) {
+            if (action === 'reject') {
+                showToast("Memproses pengembalian dana...", "info");
+                // MENGGUNAKAN RPC UNTUK ATOMIC UPDATE MENCEGAH RACE CONDITION
+                const { error: refundError } = await supabaseClient.rpc('refund_balance', {
+                    target_node: node_id,
+                    refund_amount: amount
+                });
+
+                if (refundError) {
+                    showToast("Gagal memproses refund: " + refundError.message, "error");
+                    return;
+                }
+                showToast("Withdrawal ditolak. Saldo berhasil direfund secara atomic.", "success");
+            } else {
+                showToast("Withdrawal disetujui", "success");
+            }
+            
+            let newStatus = action === 'approve' ? 'success' : 'rejected';
+            const { error: wdError } = await supabaseClient.from('withdrawals').update({ status: newStatus }).eq('trx_id', trx_id);
+            if(wdError) return showToast("Gagal mengupdate status tiket: " + wdError.message, "error");
+
+            loadWithdrawals(); 
+        }
+
+        // --- 4. AFFILIATE WITHDRAWAL MANAGEMENT LOGIC (RP KOMISI) ---
+        async function loadAffWithdrawals() {
+            const container = document.getElementById('aff-wd-container');
+            container.innerHTML = `<div class="empty-state"><div class="loading-spinner"></div>Memuat data komisi dari server...</div>`;
+
+            const { data, error } = await supabaseClient.from('affiliate_withdrawals').select('*').order('created_at', { ascending: false });
+
+            if (error) return container.innerHTML = `<div class="empty-state" style="color:var(--danger)">Gagal memuat data: ` + error.message + `</div>`;
+            if (!data || data.length === 0) return container.innerHTML = `<div class="empty-state">Tidak ada antrean pencairan komisi afiliator.</div>`;
+
+            container.innerHTML = '';
+            data.forEach(wd => {
+                let badgeClass = 'pending'; let badgeText = 'PENDING'; let actionHTML = '';
+                if (wd.status === 'success') { badgeClass = 'success'; badgeText = 'APPROVED'; } 
+                else if (wd.status === 'rejected') { badgeClass = 'rejected'; badgeText = 'REJECTED'; }
+
+                if (wd.status === 'pending') {
+                    actionHTML = `
+                        <div class="action-row">
+                            <button class="btn-approve" onclick="processAffWd('` + wd.trx_id + `', 'approve')"><i class='bx bx-check'></i> Cairkan</button>
+                            <button class="btn-reject" onclick="processAffWd('` + wd.trx_id + `', 'reject')"><i class='bx bx-x'></i> Tolak</button>
+                        </div>
+                    `;
+                }
+
+                let card = document.createElement('div');
+                card.className = 'data-card';
+                card.innerHTML = `
+                    <div class="card-header" style="padding-bottom: 8px;">
+                        <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); font-family: 'JetBrains Mono', monospace;">` + wd.trx_id + `</div>
+                        <div class="badge ` + badgeClass + `">` + badgeText + `</div>
+                    </div>
+                    <div class="card-body" style="align-items: flex-end; padding-top:8px;">
+                        <div class="wd-detail">
+                            <div style="font-weight: 700; color: var(--accent);">` + wd.node_id + `</div>
+                            <div class="wd-method">` + wd.method + ` • ` + wd.target + `</div>
+                        </div>
+                        <div class="wd-amount" style="color:var(--text-main);">Rp ` + parseFloat(wd.amount).toLocaleString('id-ID') + `</div>
+                    </div>
+                    ` + actionHTML + `
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        async function processAffWd(trx_id, action) {
+            let newStatus = action === 'approve' ? 'success' : 'rejected';
+            showToast("Memproses...", "info");
+            const { error: wdError } = await supabaseClient.from('affiliate_withdrawals').update({ status: newStatus }).eq('trx_id', trx_id);
+            if(wdError) return showToast("Gagal mengupdate status: " + wdError.message, "error");
+
+            if (action === 'reject') showToast("Pencairan komisi ditolak.", "error");
+            else showToast("Pencairan komisi disetujui!", "success");
+
+            loadAffWithdrawals(); 
+        }
+
+        // --- 5. CUSTOMER SERVICE (FIRESTORE MIGRASI) ---
+        let adminActiveNode = "";
+        let adminChatUnsubscribe = null;
+
+        // Listener Utama untuk Daftar Inbox Pesan Masuk
+        dbChat.collection('chats').onSnapshot((snapshot) => {
+            const container = document.getElementById('cs-list-container');
+            
+            if (snapshot.empty) {
+                container.innerHTML = `<div class="empty-state">Tidak ada pesan masuk dari user.</div>`;
+                document.getElementById('sidebar-cs-badge').style.display = 'none';
+                return;
+            }
+
+            let sessions = [];
+            let unreadCount = 0;
+            
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                sessions.push({ nodeId: doc.id, ...data });
+                if (data.unread_admin) unreadCount++;
+            });
+            
+            // Update Badge Sidebar
+            const badge = document.getElementById('sidebar-cs-badge');
+            if (unreadCount > 0) {
+                badge.innerText = unreadCount > 9 ? '9+' : unreadCount;
+                badge.style.display = 'block';
+            } else {
+                badge.style.display = 'none';
+            }
+            
+            container.innerHTML = '';
+            
+            // Urutkan berdasarkan waktu terakhir diupdate (terbaru di atas)
+            sessions.sort((a, b) => {
+                let timeA = a.last_updated ? a.last_updated.toMillis() : 0;
+                let timeB = b.last_updated ? b.last_updated.toMillis() : 0;
+                return timeB - timeA;
+            }).forEach(session => {
+                let msgTime = session.last_updated ? session.last_updated.toDate() : new Date();
+                let timeStr = msgTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+                let unreadBadge = session.unread_admin ? `<div style="width:10px; height:10px; background:var(--danger); border-radius:50%; box-shadow: 0 0 8px var(--danger);"></div>` : '';
+                
+                let card = document.createElement('div');
+                card.className = 'data-card';
+                card.style.cursor = 'pointer';
+                card.onclick = () => openAdminChat(session.nodeId);
+                card.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="width: 40px; height: 40px; border-radius: 12px; background: rgba(10, 132, 255, 0.15); color: var(--accent); display: flex; justify-content: center; align-items: center; font-size: 20px;">
+                                <i class='bx bx-user'></i>
+                            </div>
+                            <div>
+                                <div style="font-size: 15px; font-weight: 700; color: var(--text-main);">${session.nodeId}</div>
+                                <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 160px;">${session.last_message || 'Pesan terkirim...'}</div>
+                            </div>
+                        </div>
+                        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
+                            <div style="font-size: 10px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace;">${timeStr}</div>
+                            ${unreadBadge}
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        });
+
+        // Buka Panel Chat Khusus
+        function openAdminChat(nodeId) {
+            adminActiveNode = nodeId;
+            document.getElementById('admin-chat-target').innerText = nodeId;
+            document.getElementById('admin-chat-modal').style.display = 'flex';
+            
+            // Matikan alarm 'unread' saat admin membuka chat
+            dbChat.collection('chats').doc(nodeId).update({ unread_admin: false });
+            
+            const chatBox = document.getElementById('admin-chat-box');
+            chatBox.innerHTML = '';
+            
+            if(adminChatUnsubscribe) adminChatUnsubscribe();
+            
+            // Listener untuk memuat riwayat panjang secara real-time
+            adminChatUnsubscribe = dbChat.collection('chats').doc(nodeId).collection('messages')
+                .orderBy('timestamp', 'asc')
+                .onSnapshot((snapshot) => {
+                    snapshot.docChanges().forEach((change) => {
+                        if (change.type === "added") {
+                            const msg = change.doc.data();
+                            const msgTime = msg.timestamp ? msg.timestamp.toDate() : new Date();
+                            
+                            const bubble = document.createElement('div');
+                            bubble.className = `chat-bubble ${msg.sender === 'admin' ? 'user' : 'admin'}`;
+                            
+                            const timeStr = msgTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+                            bubble.innerHTML = `${msg.text} <div class="chat-time" style="font-size: 9px; opacity: 0.7; margin-top: 4px; text-align: right;">${timeStr}</div>`;
+                            
+                            chatBox.appendChild(bubble);
+                            setTimeout(() => { chatBox.scrollTop = chatBox.scrollHeight; }, 10);
+                        }
+                    });
+                });
+        }
+
+        function closeAdminChat() {
+            document.getElementById('admin-chat-modal').style.display = 'none';
+            if(adminChatUnsubscribe) adminChatUnsubscribe(); // Hemat kuota read
+            adminActiveNode = "";
+        }
+
+        function sendChatAdmin() {
+            const input = document.getElementById('admin-cs-input');
+            const text = input.value.trim();
+            if (!text || !adminActiveNode) return;
+
+            // Simpan riwayat chat ke sub-koleksi
+            dbChat.collection('chats').doc(adminActiveNode).collection('messages').add({
+                sender: 'admin',
+                text: text,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            });
+
+            // Perbarui status map depan untuk dilihat user
+            dbChat.collection('chats').doc(adminActiveNode).set({
+                last_message: "Admin: " + text,
+                last_updated: firebase.firestore.FieldValue.serverTimestamp(),
+                // Tidak perlu merubah status unread karena user yang harus baca
+            }, { merge: true });
+
+            input.value = '';
+        }
+
+        // Init load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadUsers();
+        });
+    </script>
+</body>
+</html>
