@@ -27,6 +27,7 @@
             --success: #32d74b;
             --danger: #ff453a;
             --warning: #ff9f0a;
+            --purple: #bf5af2;
         }
 
         * {
@@ -179,6 +180,39 @@
         .section-title {
             font-size: 22px; font-weight: 800; color: var(--text-main); margin-bottom: 20px;
             display: flex; align-items: center; gap: 10px;
+        }
+
+        /* --- DASHBOARD STATS (NEW FEATURE) --- */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        .stat-card {
+            background: rgba(28, 28, 30, 0.5);
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .stat-icon {
+            width: 32px; height: 32px;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 4px;
+        }
+        .stat-icon svg { width: 18px; height: 18px; }
+        .stat-value {
+            font-size: 20px; font-weight: 800;
+            font-family: 'JetBrains Mono', monospace; color: var(--text-main);
+        }
+        .stat-label {
+            font-size: 11px; color: var(--text-muted);
+            text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;
         }
 
         /* --- TOGGLE SWITCH UI --- */
@@ -474,6 +508,41 @@
         <section id="page-users" class="page-section active">
             <div class="section-title"><i class='bx bx-user'></i> Direktori Node Jaringan</div>
             
+            <!-- NEW DASHBOARD PANEL -->
+            <div class="dashboard-grid" id="users-dashboard" style="display: none;">
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: rgba(10, 132, 255, 0.15); color: var(--accent);">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                    </div>
+                    <div class="stat-value" id="stat-total">0</div>
+                    <div class="stat-label">Total Pengguna</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: rgba(50, 215, 75, 0.15); color: var(--success);">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 11 14 15 10"></polyline></svg>
+                    </div>
+                    <div class="stat-value" id="stat-verified">0</div>
+                    <div class="stat-label">Sudah Gas Fee</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: rgba(191, 90, 242, 0.15); color: var(--purple);">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                    </div>
+                    <div class="stat-value" id="stat-pending">0</div>
+                    <div class="stat-label">Antrean Gas Fee</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: rgba(255, 159, 10, 0.15); color: var(--warning);">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                    </div>
+                    <div class="stat-value" id="stat-unverified">0</div>
+                    <div class="stat-label">Belum Gas Fee</div>
+                </div>
+            </div>
+            
             <div id="users-container">
                 <div class="empty-state">
                     <div class="loading-spinner"></div>
@@ -701,12 +770,22 @@
             else showToast("Konfigurasi API berhasil diperbarui!", "success");
         }
 
-        // --- 1. USERS MANAGEMENT (SEMUA USER) ---
+        // --- 1. USERS MANAGEMENT (SEMUA USER) + DASHBOARD STATS ---
         async function loadUsers() {
             const container = document.getElementById('users-container');
-            container.innerHTML = `<div class="empty-state"><div class="loading-spinner"></div>Sinkronisasi ke Database...</div>`;
+            const dashContainer = document.getElementById('users-dashboard');
 
-            const { data, error } = await supabaseClient.from('users').select('*').order('node_id', { ascending: true });
+            container.innerHTML = `<div class="empty-state"><div class="loading-spinner"></div>Sinkronisasi ke Database...</div>`;
+            dashContainer.style.display = 'none';
+
+            // Ambil semua pengguna dan diurutkan berdasarkan saldo secara menurun (tertinggi ke terendah)
+            const { data, error } = await supabaseClient.from('users').select('*').order('saldo', { ascending: false });
+
+            // Ambil hitungan antrean gas fee yang masih pending
+            const { count: pendingGasCount, error: gasError } = await supabaseClient
+                .from('gas_fee_payments')
+                .select('*', { count: 'exact', head: true })
+                .eq('status', 'pending');
 
             if (error) return container.innerHTML = `<div class="empty-state" style="color:var(--danger)">Gagal memuat data: ` + error.message + `</div>`;
             if (!data || data.length === 0) return container.innerHTML = `<div class="empty-state">Belum ada Node ID yang terdaftar di jaringan.</div>`;
@@ -714,6 +793,21 @@
             globalUsersData = data; 
             container.innerHTML = '';
             
+            // Kalkulasi statistik dasbor
+            const totalUsers = data.length;
+            const verifiedUsers = data.filter(u => u.is_verified).length;
+            const unverifiedUsers = totalUsers - verifiedUsers;
+            const pendingCount = pendingGasCount || 0;
+
+            // Render metrik dasbor
+            document.getElementById('stat-total').innerText = totalUsers;
+            document.getElementById('stat-verified').innerText = verifiedUsers;
+            document.getElementById('stat-unverified').innerText = unverifiedUsers;
+            document.getElementById('stat-pending').innerText = pendingCount;
+            
+            // Tampilkan panel dasbor
+            dashContainer.style.display = 'grid';
+
             data.forEach(user => {
                 let initial = user.node_id ? user.node_id.charAt(0).toUpperCase() : '?';
                 let saldoFormat = parseFloat(user.saldo || 0).toFixed(4);
@@ -768,6 +862,7 @@
             const container = document.getElementById('affiliators-container');
             container.innerHTML = `<div class="empty-state"><div class="loading-spinner"></div>Sinkronisasi Direktori Afiliator...</div>`;
 
+            // Urutkan juga berdasarkan node_id secara default
             const { data, error } = await supabaseClient.from('users').select('*').order('node_id', { ascending: true });
 
             if (error) return container.innerHTML = `<div class="empty-state" style="color:var(--danger)">Gagal memuat data: ` + error.message + `</div>`;
