@@ -182,7 +182,7 @@
             display: flex; align-items: center; gap: 10px;
         }
 
-        /* --- DASHBOARD STATS (NEW FEATURE) --- */
+        /* --- DASHBOARD STATS --- */
         .dashboard-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -214,6 +214,35 @@
             font-size: 11px; color: var(--text-muted);
             text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;
         }
+
+        /* --- SEARCH BAR --- */
+        .search-container {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        .search-container i {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 18px;
+        }
+        .search-input {
+            width: 100%;
+            padding: 14px 16px 14px 44px;
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            background: rgba(28, 28, 30, 0.5);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            color: var(--text-main);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            outline: none;
+            transition: all 0.3s;
+        }
+        .search-input:focus { border-color: var(--accent); background: rgba(10, 132, 255, 0.05); }
 
         /* --- TOGGLE SWITCH UI --- */
         .switch {
@@ -258,7 +287,7 @@
         .user-pass { font-size: 11px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; margin-top: 2px;}
 
         .card-body {
-            display: flex; justify-content: space-between; align-items: center;
+            display: flex; justify-content: space-between; align-items: flex-end;
         }
 
         .data-label { font-size: 10px; text-transform: uppercase; color: var(--text-muted); font-weight: 600; letter-spacing: 0.5px;}
@@ -270,6 +299,13 @@
             cursor: pointer; display: flex; align-items: center; gap: 6px; transition: transform 0.2s;
         }
         .btn-edit:active { transform: scale(0.9); }
+
+        .btn-delete {
+            background: rgba(255, 69, 58, 0.15); color: var(--danger); border: none;
+            padding: 8px 16px; border-radius: 12px; font-size: 14px; font-weight: 700;
+            cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.2s;
+        }
+        .btn-delete:active { transform: scale(0.9); }
         
         .btn-view-img {
             background: rgba(255, 255, 255, 0.1); color: var(--text-main); border: 1px solid var(--border-color);
@@ -481,6 +517,20 @@
             </div>
         </div>
     </div>
+
+    <!-- MODAL DELETE USER (NEW FEATURE) -->
+    <div class="modal-overlay" id="deleteModal">
+        <div class="modal-card">
+            <div class="modal-title" style="color: var(--danger);"><i class='bx bx-trash'></i> Hapus Node ID</div>
+            <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px; text-align: center; line-height: 1.5;">
+                Tindakan ini <strong style="color:var(--danger);">permanen</strong>. Node <strong id="deleteTargetId" style="color:var(--text-main); font-family: 'JetBrains Mono', monospace;"></strong> beserta seluruh data dan riwayat chat CS akan dihapus dari database.
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn-secondary" onclick="closeModal('deleteModal')">Batal</button>
+                <button class="btn-primary" style="background: var(--danger);" onclick="confirmDeleteUser()">Ya, Hapus</button>
+            </div>
+        </div>
+    </div>
     
     <!-- MODAL VIEW BUKTI TRANSFER -->
     <div class="modal-overlay" id="proofModal">
@@ -508,7 +558,13 @@
         <section id="page-users" class="page-section active">
             <div class="section-title"><i class='bx bx-user'></i> Direktori Node Jaringan</div>
             
-            <!-- NEW DASHBOARD PANEL -->
+            <!-- NEW SEARCH BAR FEATURE -->
+            <div class="search-container">
+                <i class='bx bx-search'></i>
+                <input type="text" id="searchUserInput" class="search-input" placeholder="Cari Node ID spesifik..." onkeyup="filterUsers()">
+            </div>
+            
+            <!-- DASHBOARD PANEL -->
             <div class="dashboard-grid" id="users-dashboard" style="display: none;">
                 <div class="stat-card">
                     <div class="stat-icon" style="background: rgba(10, 132, 255, 0.15); color: var(--accent);">
@@ -770,13 +826,14 @@
             else showToast("Konfigurasi API berhasil diperbarui!", "success");
         }
 
-        // --- 1. USERS MANAGEMENT (SEMUA USER) + DASHBOARD STATS ---
+        // --- 1. USERS MANAGEMENT & DASHBOARD STATS ---
         async function loadUsers() {
             const container = document.getElementById('users-container');
             const dashContainer = document.getElementById('users-dashboard');
 
             container.innerHTML = `<div class="empty-state"><div class="loading-spinner"></div>Sinkronisasi ke Database...</div>`;
             dashContainer.style.display = 'none';
+            document.getElementById('searchUserInput').value = ''; // Reset search bar
 
             // Ambil semua pengguna dan diurutkan berdasarkan saldo secara menurun (tertinggi ke terendah)
             const { data, error } = await supabaseClient.from('users').select('*').order('saldo', { ascending: false });
@@ -827,7 +884,7 @@
                 `;
                 
                 let card = document.createElement('div');
-                card.className = 'data-card';
+                card.className = 'data-card user-data-card'; // Added user-data-card class for searching
                 card.innerHTML = `
                     <div class="card-header" style="align-items:center;">
                         <div class="user-info">
@@ -844,17 +901,91 @@
                         ` + toggleHTML + `
                     </div>
                     <div class="card-body" style="padding-top: 12px;">
-                        <div>
+                        <div style="flex: 1;">
                             <div class="data-label">Total Saldo USD</div>
                             <div class="data-value">$` + saldoFormat + `</div>
                         </div>
-                        <button class="btn-edit" onclick="openEditModal('` + user.node_id + `', ` + (user.saldo || 0) + `)">
-                            <i class='bx bx-edit-alt'></i> Edit Saldo
-                        </button>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="btn-edit" onclick="openEditModal('` + user.node_id + `', ` + (user.saldo || 0) + `)">
+                                <i class='bx bx-edit-alt'></i> Edit
+                            </button>
+                            <button class="btn-delete" onclick="openDeleteModal('` + user.node_id + `')">
+                                <i class='bx bx-trash'></i>
+                            </button>
+                        </div>
                     </div>
                 `;
                 container.appendChild(card);
             });
+        }
+
+        // --- FUNGSI PENCARIAN (SEARCH) REAL-TIME ---
+        function filterUsers() {
+            let input = document.getElementById('searchUserInput').value.toUpperCase();
+            let container = document.getElementById('users-container');
+            let cards = container.getElementsByClassName('user-data-card');
+
+            for (let i = 0; i < cards.length; i++) {
+                let nodeIdElement = cards[i].querySelector('.user-name');
+                if (nodeIdElement) {
+                    let txtValue = nodeIdElement.textContent || nodeIdElement.innerText;
+                    if (txtValue.toUpperCase().indexOf(input) > -1) {
+                        cards[i].style.display = "";
+                    } else {
+                        cards[i].style.display = "none";
+                    }
+                }       
+            }
+        }
+
+        // --- FUNGSI HAPUS USER (DELETE) ---
+        let currentDeleteId = null;
+
+        function openDeleteModal(nodeId) {
+            currentDeleteId = nodeId;
+            document.getElementById('deleteTargetId').innerText = nodeId;
+            openModal('deleteModal');
+        }
+
+        async function confirmDeleteUser() {
+            if (!currentDeleteId) return;
+            
+            showToast("Memulai proses penghapusan permanen...", "info");
+            closeModal('deleteModal');
+
+            // 1. Delete Akun dari Supabase (ini akan otomatis hapus data related jika foreign key pakai ON DELETE CASCADE)
+            const { error: dbError } = await supabaseClient.from('users').delete().eq('node_id', currentDeleteId);
+            
+            if (dbError) {
+                showToast("Gagal menghapus database: " + dbError.message, "error");
+                return;
+            }
+
+            // 2. Bersihkan Histori Chat CS dari Firebase Firestore
+            try {
+                // Ambil referensi ke subcollection messages
+                const messagesRef = dbChat.collection('chats').doc(currentDeleteId).collection('messages');
+                const snapshot = await messagesRef.get();
+                
+                // Eksekusi penghapusan semua pesan satu-per-satu
+                let deletePromises = [];
+                snapshot.forEach(doc => {
+                    deletePromises.push(doc.ref.delete());
+                });
+                await Promise.all(deletePromises);
+                
+                // Terakhir, hapus dokumen parent chat agar hilang dari daftar admin
+                await dbChat.collection('chats').doc(currentDeleteId).delete();
+                console.log("Firebase chat cleared for:", currentDeleteId);
+            } catch (err) {
+                // Jangan jadikan block error jika chat memang kosong
+                console.warn("Logika pembersihan chat Firebase:", err);
+            }
+
+            showToast("Node ID " + currentDeleteId + " berhasil dihapus bersih!", "success");
+            currentDeleteId = null;
+            document.getElementById('searchUserInput').value = ''; 
+            loadUsers(); // Refresh Data UI
         }
 
         // --- 1.B AFILIATOR MANAGEMENT (KHUSUS VERIFIED) ---
