@@ -56,11 +56,21 @@
         .sidebar.show { left: 0; }
         .sidebar-header { padding: 30px 20px; font-size: 20px; font-weight: 800; color: var(--text-main); border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; }
         .sidebar-close { font-size: 24px; color: var(--text-muted); cursor: pointer; }
-        .sidebar-menu { padding: 20px 10px; display: flex; flex-direction: column; gap: 8px; }
+        .sidebar-menu { padding: 20px 10px; display: flex; flex-direction: column; gap: 8px; flex: 1; overflow-y: auto; }
         .menu-item { display: flex; align-items: center; gap: 12px; padding: 16px 20px; color: var(--text-muted); font-size: 14px; font-weight: 600; border-radius: 16px; cursor: pointer; transition: all 0.2s ease; position: relative; }
         .menu-item i { font-size: 20px; }
         .menu-item.active { background: rgba(255,69,58,0.15); color: var(--danger); }
         .menu-item:active { transform: scale(0.96); }
+
+        /* DANGER ZONE SIDEBAR */
+        .sidebar-danger-zone { padding: 10px 10px 20px; border-top: 1px solid rgba(255,69,58,0.15); margin-top: auto; }
+        .sidebar-danger-label { font-size: 9px; font-weight: 800; color: rgba(255,69,58,0.5); text-transform: uppercase; letter-spacing: 1px; padding: 0 12px; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+        .sidebar-danger-label::before, .sidebar-danger-label::after { content: ''; flex: 1; height: 1px; background: rgba(255,69,58,0.15); }
+        .btn-purge-sidebar { display: flex; align-items: center; gap: 12px; padding: 16px 20px; color: var(--danger); font-size: 14px; font-weight: 700; border-radius: 16px; cursor: pointer; transition: all 0.2s ease; background: rgba(255,69,58,0.08); border: 1px solid rgba(255,69,58,0.2); width: 100%; position: relative; }
+        .btn-purge-sidebar:active { transform: scale(0.96); background: rgba(255,69,58,0.15); }
+        .btn-purge-sidebar i { font-size: 20px; }
+        .purge-warning-dot { width: 6px; height: 6px; background: var(--danger); border-radius: 50%; animation: pulseDot 1.5s ease-in-out infinite; position: absolute; right: 14px; top: 50%; transform: translateY(-50%); box-shadow: 0 0 6px var(--danger); }
+        @keyframes pulseDot { 0%, 100% { opacity: 1; transform: translateY(-50%) scale(1); } 50% { opacity: 0.4; transform: translateY(-50%) scale(0.7); } }
 
         /* MAIN */
         .app-container { padding: 24px 20px; padding-top: 90px; min-height: 100vh; }
@@ -153,72 +163,129 @@
         .dl-list-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
         .dl-list-item:last-child { border-bottom: none; }
 
-        /* ============================================================
-           CS INBOX ITEM — GAS FEE STATUS BADGE
-        ============================================================ */
-        .cs-gas-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 3px;
-            padding: 2px 7px;
-            border-radius: 6px;
-            font-size: 9px;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.4px;
-        }
+        /* CS GAS BADGE */
+        .cs-gas-badge { display: inline-flex; align-items: center; gap: 3px; padding: 2px 7px; border-radius: 6px; font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.4px; }
         .cs-gas-badge.verified   { background: rgba(50,215,75,0.15); color: var(--success); }
         .cs-gas-badge.unverified { background: rgba(255,159,10,0.15); color: var(--warning); }
 
         /* UNREAD NUMBER BADGE */
-        .cs-unread-badge {
-            background: var(--danger);
-            color: white;
-            font-size: 10px;
-            font-weight: 800;
-            min-width: 20px;
-            height: 20px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0 5px;
-            box-shadow: 0 0 8px rgba(255,69,58,0.6);
-        }
+        .cs-unread-badge { background: var(--danger); color: white; font-size: 10px; font-weight: 800; min-width: 20px; height: 20px; border-radius: 10px; display: flex; align-items: center; justify-content: center; padding: 0 5px; box-shadow: 0 0 8px rgba(255,69,58,0.6); }
 
         /* SIDEBAR UNREAD NUMBER */
-        .sidebar-cs-num {
-            background: var(--danger);
-            color: white;
-            font-size: 10px;
-            font-weight: 800;
-            min-width: 20px;
-            height: 20px;
-            border-radius: 10px;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            padding: 0 5px;
-            position: absolute;
-            right: 20px;
-            box-shadow: 0 0 8px rgba(255,69,58,0.5);
-        }
+        .sidebar-cs-num { background: var(--danger); color: white; font-size: 10px; font-weight: 800; min-width: 20px; height: 20px; border-radius: 10px; display: none; align-items: center; justify-content: center; padding: 0 5px; position: absolute; right: 20px; box-shadow: 0 0 8px rgba(255,69,58,0.5); }
 
         /* GAS FEE — PARTNER INFO ROW */
-        .gas-partner-row {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            padding: 8px 12px;
-            border-radius: 10px;
-            background: rgba(191,90,242,0.08);
-            border: 1px solid rgba(191,90,242,0.15);
-            margin-top: 2px;
-        }
+        .gas-partner-row { display: flex; align-items: center; gap: 6px; padding: 8px 12px; border-radius: 10px; background: rgba(191,90,242,0.08); border: 1px solid rgba(191,90,242,0.15); margin-top: 2px; }
         .gas-partner-row i { color: var(--purple); font-size: 14px; flex-shrink: 0; }
         .gas-partner-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.4px; }
         .gas-partner-value { font-size: 13px; font-weight: 700; color: var(--purple); font-family: 'JetBrains Mono', monospace; }
         .gas-partner-none { font-size: 13px; font-weight: 600; color: var(--text-muted); font-style: italic; }
+
+        /* ============================================================
+           PURGE MODAL
+        ============================================================ */
+        .purge-modal-card {
+            background: rgba(20,10,10,0.97);
+            border: 1px solid rgba(255,69,58,0.35);
+            border-radius: 28px;
+            padding: 28px 24px;
+            width: 92%;
+            max-width: 340px;
+            transform: translateY(20px) scale(0.95);
+            transition: all 0.4s cubic-bezier(0.34,1.56,0.64,1);
+            box-shadow: 0 20px 60px rgba(255,69,58,0.2), 0 0 0 1px rgba(255,69,58,0.1);
+        }
+        .modal-overlay.show .purge-modal-card { transform: translateY(0) scale(1); }
+        .purge-icon-ring {
+            width: 64px; height: 64px; border-radius: 50%;
+            background: rgba(255,69,58,0.12);
+            border: 2px solid rgba(255,69,58,0.35);
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 16px;
+            animation: ringPulse 2s ease-in-out infinite;
+        }
+        @keyframes ringPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(255,69,58,0.3); }
+            50% { box-shadow: 0 0 0 10px rgba(255,69,58,0); }
+        }
+        .purge-icon-ring i { font-size: 30px; color: var(--danger); }
+        .purge-title { font-size: 18px; font-weight: 800; color: var(--danger); text-align: center; margin-bottom: 8px; }
+        .purge-subtitle { font-size: 12px; color: var(--text-muted); text-align: center; line-height: 1.6; margin-bottom: 20px; }
+        .purge-warning-box {
+            background: rgba(255,69,58,0.07);
+            border: 1px solid rgba(255,69,58,0.2);
+            border-radius: 14px;
+            padding: 14px;
+            margin-bottom: 20px;
+        }
+        .purge-warning-item {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 12px; color: rgba(255,69,58,0.85); font-weight: 600;
+            padding: 4px 0;
+        }
+        .purge-warning-item i { font-size: 14px; color: var(--danger); flex-shrink: 0; }
+        .purge-confirm-label {
+            font-size: 11px; font-weight: 700; color: var(--text-muted);
+            text-transform: uppercase; letter-spacing: 0.5px;
+            margin-bottom: 8px; display: block;
+        }
+        .purge-confirm-label span { color: var(--danger); font-family: 'JetBrains Mono', monospace; }
+        .purge-input {
+            width: 100%; padding: 14px 16px; border-radius: 14px;
+            border: 1px solid rgba(255,69,58,0.25);
+            background: rgba(255,69,58,0.04);
+            color: var(--danger);
+            outline: none;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 15px; font-weight: 700;
+            letter-spacing: 1px;
+            transition: all 0.3s ease; margin-bottom: 16px;
+            text-align: center;
+        }
+        .purge-input:focus { border-color: var(--danger); background: rgba(255,69,58,0.08); }
+        .purge-input.valid { border-color: var(--danger); background: rgba(255,69,58,0.12); box-shadow: 0 0 12px rgba(255,69,58,0.2); }
+        .btn-purge-confirm {
+            width: 100%; padding: 14px; border-radius: 14px;
+            background: var(--danger); color: white; border: none;
+            font-size: 14px; font-weight: 800; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            opacity: 0.3; pointer-events: none;
+            transition: all 0.3s ease;
+        }
+        .btn-purge-confirm.enabled { opacity: 1; pointer-events: all; box-shadow: 0 4px 20px rgba(255,69,58,0.4); }
+        .btn-purge-confirm.enabled:active { transform: scale(0.97); }
+
+        /* PURGE PROGRESS */
+        .purge-progress-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95);
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            z-index: 999999;
+            display: none; flex-direction: column;
+            justify-content: center; align-items: center;
+            gap: 20px;
+        }
+        .purge-progress-overlay.show { display: flex; }
+        .purge-skull { font-size: 60px; animation: skullPulse 0.6s ease-in-out infinite alternate; }
+        @keyframes skullPulse { from { transform: scale(1); opacity: 0.7; } to { transform: scale(1.1); opacity: 1; } }
+        .purge-progress-title { font-size: 20px; font-weight: 800; color: var(--danger); }
+        .purge-progress-log {
+            width: 88%; max-width: 320px;
+            background: rgba(28,28,30,0.8);
+            border: 1px solid rgba(255,69,58,0.2);
+            border-radius: 16px; padding: 16px;
+            max-height: 200px; overflow-y: auto;
+        }
+        .purge-log-line {
+            font-size: 11px; font-family: 'JetBrains Mono', monospace;
+            color: var(--text-muted); padding: 3px 0;
+            animation: logFadeIn 0.3s ease forwards;
+        }
+        .purge-log-line.done { color: var(--success); }
+        .purge-log-line.err  { color: var(--danger); }
+        @keyframes logFadeIn { from { opacity: 0; transform: translateX(-8px); } to { opacity: 1; transform: translateX(0); } }
+        .purge-bar-wrap { width: 88%; max-width: 320px; background: rgba(255,255,255,0.05); border-radius: 20px; height: 6px; overflow: hidden; }
+        .purge-bar { height: 100%; width: 0%; background: linear-gradient(90deg, var(--danger), #ff8a80); border-radius: 20px; transition: width 0.4s ease; }
     </style>
 </head>
 <body>
@@ -264,15 +331,27 @@
         </div>
         <div class="menu-item" id="nav-cs" onclick="navTo('cs')">
             <i class='bx bx-message-dots'></i> Customer Service
-            <!-- UNREAD NUMBER BADGE DI SIDEBAR -->
             <div id="sidebar-cs-badge" class="sidebar-cs-num"></div>
         </div>
         <div class="menu-item" id="nav-api" onclick="navTo('api')">
             <i class='bx bx-cog'></i> Konfigurasi API
         </div>
-        <div class="menu-item" style="margin-top: auto; color: var(--danger);" onclick="adminLogout()">
+        <div class="menu-item" style="margin-top: 8px; color: var(--danger);" onclick="adminLogout()">
             <i class='bx bx-log-out'></i> Keluar Admin
         </div>
+    </div>
+
+    <!-- ══ DANGER ZONE ══ -->
+    <div class="sidebar-danger-zone">
+        <div class="sidebar-danger-label">Danger Zone</div>
+        <button class="btn-purge-sidebar" onclick="openPurgeModal()">
+            <i class='bx bx-bomb'></i>
+            <div>
+                <div style="font-size:13px;">Purge Semua Data</div>
+                <div style="font-size:10px;font-weight:600;opacity:0.6;margin-top:1px;">Hapus user + chat permanen</div>
+            </div>
+            <div class="purge-warning-dot"></div>
+        </button>
     </div>
 </div>
 
@@ -336,6 +415,59 @@
             <button class="btn-primary" style="background: var(--danger);" onclick="confirmDeleteMessages()">Ya, Hapus Pesan</button>
         </div>
     </div>
+</div>
+
+<!-- ============================================================
+     MODAL PURGE SEMUA DATA  ← BARU
+============================================================ -->
+<div class="modal-overlay" id="purgeModal">
+    <div class="purge-modal-card">
+        <div class="purge-icon-ring">
+            <i class='bx bx-bomb'></i>
+        </div>
+        <div class="purge-title">⚠️ Purge Semua Data</div>
+        <div class="purge-subtitle">
+            Tindakan ini <strong style="color:var(--danger);">tidak dapat dibatalkan</strong>.<br>
+            Seluruh data berikut akan dihapus permanen dari Supabase &amp; Firebase.
+        </div>
+
+        <!-- DAFTAR YANG AKAN DIHAPUS -->
+        <div class="purge-warning-box">
+            <div class="purge-warning-item"><i class='bx bx-user-x'></i> Semua akun Node ID (tabel users)</div>
+            <div class="purge-warning-item"><i class='bx bx-receipt'></i> Semua pembayaran Gas Fee</div>
+            <div class="purge-warning-item"><i class='bx bx-money-withdraw'></i> Semua antrean Withdrawal</div>
+            <div class="purge-warning-item"><i class='bx bx-gift'></i> Semua komisi Afiliasi</div>
+            <div class="purge-warning-item"><i class='bx bx-message-x'></i> Semua riwayat chat CS (Firebase)</div>
+        </div>
+
+        <!-- KONFIRMASI KETIK -->
+        <label class="purge-confirm-label">Ketik <span>HAPUS SEMUA</span> untuk mengaktifkan tombol</label>
+        <input
+            type="text"
+            id="purgeConfirmInput"
+            class="purge-input"
+            placeholder="HAPUS SEMUA"
+            oninput="onPurgeInputChange(this)"
+            autocomplete="off"
+            autocorrect="off"
+            spellcheck="false"
+        >
+
+        <button id="btnPurgeConfirm" class="btn-purge-confirm" onclick="confirmPurgeAll()">
+            <i class='bx bx-bomb'></i> Hapus Semua Sekarang
+        </button>
+        <button class="btn-secondary" style="margin-top:10px;" onclick="closeModal('purgeModal'); document.getElementById('purgeConfirmInput').value=''; onPurgeInputChange(document.getElementById('purgeConfirmInput'));">
+            Batal
+        </button>
+    </div>
+</div>
+
+<!-- PURGE PROGRESS OVERLAY -->
+<div class="purge-progress-overlay" id="purgeProgressOverlay">
+    <div class="purge-skull">💣</div>
+    <div class="purge-progress-title">Menghapus Semua Data...</div>
+    <div class="purge-bar-wrap"><div class="purge-bar" id="purgeBar"></div></div>
+    <div class="purge-progress-log" id="purgeLog"></div>
 </div>
 
 <!-- APP CONTAINER -->
@@ -444,32 +576,21 @@
 
 </div>
 
-<!-- ============================================================
-     MODAL ADMIN CHAT (FULL OVERLAY)
-     Perubahan: + tombol hapus pesan, scroll fix, Enter to send
-============================================================ -->
+<!-- ADMIN CHAT MODAL -->
 <div id="admin-chat-modal" style="z-index:100000; position:fixed; top:0; left:0; width:100%; height:100vh; background:var(--bg-color); display:none; flex-direction:column;">
-
-    <!-- HEADER CHAT -->
     <div style="padding:16px 20px; background:rgba(18,18,18,0.9); backdrop-filter:blur(24px); border-bottom:1px solid var(--border-color); display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:10;">
         <div style="display:flex; align-items:center; gap:12px;">
             <i class='bx bx-left-arrow-alt' style="font-size:26px; color:var(--text-main); cursor:pointer;" onclick="closeAdminChat()"></i>
             <div>
                 <div style="font-size:16px; font-weight:700; color:var(--text-main);">Node: <span id="admin-chat-target" style="color:var(--accent);"></span></div>
-                <!-- STATUS GAS FEE DI HEADER CHAT -->
                 <div id="admin-chat-gas-status" style="margin-top:2px;"></div>
             </div>
         </div>
-        <!-- TOMBOL HAPUS SEMUA PESAN -->
         <button id="btn-delete-msgs" onclick="openDeleteMessagesModal()" style="background:rgba(255,69,58,0.12); color:var(--danger); border:1px solid rgba(255,69,58,0.25); padding:8px 14px; border-radius:12px; font-size:12px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:6px; white-space:nowrap;">
             <i class='bx bx-trash' style="font-size:15px;"></i> Hapus Pesan
         </button>
     </div>
-
-    <!-- CHAT BOX -->
     <div id="admin-chat-box" style="flex:1; padding:20px; padding-bottom:120px; overflow-y:auto; display:flex; flex-direction:column; gap:12px;"></div>
-
-    <!-- INPUT AREA -->
     <div style="position:fixed; bottom:0; left:0; width:100%; padding:14px 20px; background:rgba(18,18,18,0.9); backdrop-filter:blur(24px); border-top:1px solid var(--border-color); display:flex; gap:10px; z-index:100;">
         <input type="text" id="admin-cs-input" class="input-glass" placeholder="Balas pesan user..." style="padding:14px 16px; border-radius:20px; margin-bottom:0;" onkeydown="if(event.key==='Enter') sendChatAdmin()">
         <button class="btn-primary" style="width:50px; height:50px; border-radius:50%; display:flex; justify-content:center; align-items:center; flex-shrink:0; padding:0;" onclick="sendChatAdmin()">
@@ -478,9 +599,7 @@
     </div>
 </div>
 
-<!-- ============================================================
-     JAVASCRIPT
-============================================================ -->
+<!-- JAVASCRIPT -->
 <script>
     // ── FIREBASE INIT ──────────────────────────────────────────
     const firebaseConfig = {
@@ -500,13 +619,13 @@
     const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
     // ── GLOBAL STATE ───────────────────────────────────────────
-    let globalUsersData   = [];   // semua user dari Supabase
-    let verifiedUsersMap  = {};   // { node_id: is_verified }
-    let currentEditId     = null;
-    let currentDeleteId   = null;
+    let globalUsersData    = [];
+    let verifiedUsersMap   = {};
+    let currentEditId      = null;
+    let currentDeleteId    = null;
     let currentDeleteMsgId = null;
-    let currentProofUrl   = "";
-    let adminActiveNode   = "";
+    let currentProofUrl    = "";
+    let adminActiveNode    = "";
     let adminChatUnsubscribe = null;
 
     // ── TOAST ──────────────────────────────────────────────────
@@ -576,7 +695,7 @@
         else showToast("Konfigurasi API berhasil diperbarui!", "success");
     }
 
-    // ── HELPER: sync verifiedUsersMap dari Supabase ────────────
+    // ── HELPER: sync verifiedUsersMap ─────────────────────────
     async function syncVerifiedMap() {
         const { data } = await supabaseClient.from('users').select('node_id, is_verified');
         if (data) data.forEach(u => { verifiedUsersMap[u.node_id] = u.is_verified; });
@@ -584,7 +703,7 @@
 
     // ── 1. USERS ───────────────────────────────────────────────
     async function loadUsers() {
-        const container    = document.getElementById('users-container');
+        const container     = document.getElementById('users-container');
         const dashContainer = document.getElementById('users-dashboard');
         container.innerHTML = `<div class="empty-state"><div class="loading-spinner"></div>Sinkronisasi ke Database...</div>`;
         dashContainer.style.display = 'none';
@@ -598,7 +717,6 @@
         if (!data || data.length === 0) return container.innerHTML = `<div class="empty-state">Belum ada Node ID yang terdaftar.</div>`;
 
         globalUsersData = data;
-        // Update verifiedUsersMap
         data.forEach(u => { verifiedUsersMap[u.node_id] = u.is_verified; });
 
         container.innerHTML = '';
@@ -609,10 +727,10 @@
         dashContainer.style.display = 'grid';
 
         data.forEach(user => {
-            let initial    = user.node_id ? user.node_id.charAt(0).toUpperCase() : '?';
+            let initial     = user.node_id ? user.node_id.charAt(0).toUpperCase() : '?';
             let saldoFormat = parseFloat(user.saldo || 0).toFixed(4);
-            let isChecked  = user.is_verified ? "checked" : "";
-            let statusText = user.is_verified ? "Verified" : "Unverified";
+            let isChecked   = user.is_verified ? "checked" : "";
+            let statusText  = user.is_verified ? "Verified" : "Unverified";
             let statusColor = user.is_verified ? "var(--success)" : "var(--warning)";
 
             let card = document.createElement('div');
@@ -666,7 +784,6 @@
         }
     }
 
-    // DELETE USER
     function openDeleteModal(nodeId) {
         currentDeleteId = nodeId;
         document.getElementById('deleteTargetId').innerText = nodeId;
@@ -692,7 +809,6 @@
         loadUsers();
     }
 
-    // EDIT SALDO
     function openEditModal(nodeId, currentSaldo) {
         currentEditId = nodeId;
         document.getElementById('editTargetId').innerText = nodeId;
@@ -708,7 +824,6 @@
         else { showToast("Saldo " + currentEditId + " berhasil diupdate!", "success"); closeModal('editModal'); loadUsers(); }
     }
 
-    // TOGGLE VERIF
     async function toggleVerif(nodeId, currentStatus) {
         let newStatus = !currentStatus;
         showToast("Memperbarui status verifikasi...", "info");
@@ -808,7 +923,6 @@
     }
 
     // ── 2. GAS FEE ─────────────────────────────────────────────
-    // Sekarang juga menampilkan info partner (referred_by)
     function viewProof(url) {
         currentProofUrl = url;
         document.getElementById('proofImageDisplay').src = url;
@@ -832,38 +946,24 @@
     async function loadGasPayments() {
         const container = document.getElementById('gas-container');
         container.innerHTML = `<div class="empty-state"><div class="loading-spinner"></div>Memuat data dari server...</div>`;
-
-        // Ambil gas fee sekaligus data referred_by + ref_code dari users
         const [gasRes, usersRes] = await Promise.all([
             supabaseClient.from('gas_fee_payments').select('*').order('created_at', { ascending: false }),
             supabaseClient.from('users').select('node_id, referred_by, ref_code')
         ]);
-
         if (gasRes.error) return container.innerHTML = `<div class="empty-state" style="color:var(--danger)">Gagal memuat data: ${gasRes.error.message}</div>`;
         if (!gasRes.data || gasRes.data.length === 0) return container.innerHTML = `<div class="empty-state">Tidak ada antrean pembayaran Gas Fee.</div>`;
-
-        // Buat map node_id → referred_by (ref_code partner)
-        // dan ref_code → node_id (untuk resolve nama partner)
-        const refMap = {};          // node_id → referred_by (ref_code)
-        const refCodeToNode = {};   // ref_code → node_id
+        const refMap = {}; const refCodeToNode = {};
         if (usersRes.data) usersRes.data.forEach(u => {
             refMap[u.node_id] = u.referred_by || null;
             if (u.ref_code) refCodeToNode[u.ref_code] = u.node_id;
         });
-
         container.innerHTML = '';
-
         gasRes.data.forEach(gas => {
             let badgeClass = 'pending', badgeText = 'PENDING', actionHTML = '';
             let dateObj = new Date(gas.created_at);
-            let timeStr = dateObj.toLocaleDateString('id-ID', { day:'2-digit', month:'short' })
-                        + " • "
-                        + dateObj.toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' })
-                        + " WIB";
-
+            let timeStr = dateObj.toLocaleDateString('id-ID', { day:'2-digit', month:'short' }) + " • " + dateObj.toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' }) + " WIB";
             if (gas.status === 'success')  { badgeClass = 'success';  badgeText = 'APPROVED'; }
             else if (gas.status === 'rejected') { badgeClass = 'rejected'; badgeText = 'REJECTED'; }
-
             if (gas.status === 'pending') {
                 actionHTML = `
                     <div class="action-row">
@@ -872,11 +972,8 @@
                     </div>
                 `;
             }
-
-            // ── INFO PARTNER / REFERRAL ──────────────────────────
-            let partnerRefCode = refMap[gas.node_id];               // ref_code milik partner
-            let partnerName    = partnerRefCode ? refCodeToNode[partnerRefCode] : null; // node_id partner
-
+            let partnerRefCode = refMap[gas.node_id];
+            let partnerName    = partnerRefCode ? refCodeToNode[partnerRefCode] : null;
             let partnerHTML = `
                 <div class="gas-partner-row">
                     <i class='bx bx-network-chart'></i>
@@ -889,7 +986,6 @@
                     </div>
                 </div>
             `;
-
             let card = document.createElement('div');
             card.className = 'data-card';
             card.innerHTML = `
@@ -979,7 +1075,7 @@
         loadWithdrawals();
     }
 
-    // ── 4. KOMISI AFILIASI ────────────────────────────────────
+    // ── 4. KOMISI AFILIASI ─────────────────────────────────────
     async function loadAffWithdrawals() {
         const container = document.getElementById('aff-wd-container');
         container.innerHTML = `<div class="empty-state"><div class="loading-spinner"></div>Memuat data komisi...</div>`;
@@ -1028,10 +1124,7 @@
     }
 
     // ── 5. CUSTOMER SERVICE ───────────────────────────────────
-    // Listener real-time inbox — sekarang badge menampilkan JUMLAH PESAN UNREAD
-    // dan tiap item menampilkan status gas fee user
     async function ensureVerifiedMap() {
-        // Jika map kosong, sync dulu dari Supabase
         if (Object.keys(verifiedUsersMap).length === 0) await syncVerifiedMap();
     }
 
@@ -1039,69 +1132,43 @@
         const container = document.getElementById('cs-list-container');
         if (snapshot.empty) {
             container.innerHTML = `<div class="empty-state">Tidak ada pesan masuk dari user.</div>`;
-            updateSidebarBadge(0);
-            return;
+            updateSidebarBadge(0); return;
         }
-
-        // Pastikan verifiedUsersMap terisi
         await ensureVerifiedMap();
-
-        let sessions = [];
-        let totalUnread = 0;
-
+        let sessions = []; let totalUnread = 0;
         snapshot.forEach(doc => {
             const d = doc.data();
             sessions.push({ nodeId: doc.id, ...d });
             totalUnread += (d.unread_count && d.unread_count > 0) ? d.unread_count : (d.unread_admin ? 1 : 0);
         });
-
         updateSidebarBadge(totalUnread);
-
         container.innerHTML = '';
-
         sessions.sort((a, b) => {
-            // Unread selalu di atas, read di bawah
             let aUnread = (a.unread_count > 0 || a.unread_admin) ? 1 : 0;
             let bUnread = (b.unread_count > 0 || b.unread_admin) ? 1 : 0;
             if (bUnread !== aUnread) return bUnread - aUnread;
-            // Dalam grup yg sama, urutkan berdasarkan waktu terbaru
             let tA = a.last_updated ? a.last_updated.toMillis() : 0;
             let tB = b.last_updated ? b.last_updated.toMillis() : 0;
             return tB - tA;
         }).forEach(session => {
-            let msgTime = session.last_updated ? session.last_updated.toDate() : new Date();
-            let timeStr = msgTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-
-            // Jumlah unread
-            let unreadNum = (session.unread_count && session.unread_count > 0)
-                ? session.unread_count
-                : (session.unread_admin ? 1 : 0);
-            let unreadHTML = unreadNum > 0
-                ? `<div class="cs-unread-badge">${unreadNum > 99 ? '99+' : unreadNum}</div>`
-                : '';
-
-            // Status gas fee
+            let msgTime  = session.last_updated ? session.last_updated.toDate() : new Date();
+            let timeStr  = msgTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+            let unreadNum = (session.unread_count && session.unread_count > 0) ? session.unread_count : (session.unread_admin ? 1 : 0);
+            let unreadHTML = unreadNum > 0 ? `<div class="cs-unread-badge">${unreadNum > 99 ? '99+' : unreadNum}</div>` : '';
             let isVerif = verifiedUsersMap[session.nodeId];
             let gasHTML = isVerif !== undefined
-                ? `<span class="cs-gas-badge ${isVerif ? 'verified' : 'unverified'}">
-                       <i class='bx ${isVerif ? 'bx-check-circle' : 'bx-time'}'></i>
-                       ${isVerif ? 'Gas Fee ✓' : 'Belum Gas Fee'}
-                   </span>`
+                ? `<span class="cs-gas-badge ${isVerif ? 'verified' : 'unverified'}"><i class='bx ${isVerif ? 'bx-check-circle' : 'bx-time'}'></i>${isVerif ? 'Gas Fee ✓' : 'Belum Gas Fee'}</span>`
                 : '';
-
             let card = document.createElement('div');
             card.className = 'data-card';
             card.style.cursor = 'pointer';
-            // Highlight jika ada unread
             if (unreadNum > 0) card.style.borderColor = 'rgba(255,69,58,0.35)';
             card.onclick = () => openAdminChat(session.nodeId);
             card.innerHTML = `
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                     <div style="display:flex; align-items:center; gap:12px;">
                         <div style="position:relative;">
-                            <div style="width:44px; height:44px; border-radius:12px; background:rgba(10,132,255,0.15); color:var(--accent); display:flex; justify-content:center; align-items:center; font-size:20px;">
-                                <i class='bx bx-user'></i>
-                            </div>
+                            <div style="width:44px; height:44px; border-radius:12px; background:rgba(10,132,255,0.15); color:var(--accent); display:flex; justify-content:center; align-items:center; font-size:20px;"><i class='bx bx-user'></i></div>
                             ${unreadNum > 0 ? `<div style="position:absolute; top:-6px; right:-6px; width:12px; height:12px; background:var(--danger); border-radius:50%; border:2px solid var(--bg-color); box-shadow:0 0 6px var(--danger);"></div>` : ''}
                         </div>
                         <div>
@@ -1109,9 +1176,7 @@
                                 <div style="font-size:15px; font-weight:700; color:var(--text-main);">${session.nodeId}</div>
                                 ${gasHTML}
                             </div>
-                            <div style="font-size:12px; color:var(--text-muted); margin-top:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:160px;">
-                                ${session.last_message || 'Pesan terkirim...'}
-                            </div>
+                            <div style="font-size:12px; color:var(--text-muted); margin-top:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:160px;">${session.last_message || 'Pesan terkirim...'}</div>
                         </div>
                     </div>
                     <div style="display:flex; flex-direction:column; align-items:flex-end; gap:8px; flex-shrink:0;">
@@ -1126,44 +1191,23 @@
 
     function updateSidebarBadge(count) {
         const badge = document.getElementById('sidebar-cs-badge');
-        if (count > 0) {
-            badge.innerText = count > 99 ? '99+' : count;
-            badge.style.display = 'flex';
-        } else {
-            badge.style.display = 'none';
-        }
+        if (count > 0) { badge.innerText = count > 99 ? '99+' : count; badge.style.display = 'flex'; }
+        else { badge.style.display = 'none'; }
     }
 
-    // ── BUKA PANEL CHAT ────────────────────────────────────────
     function openAdminChat(nodeId) {
         adminActiveNode = nodeId;
         document.getElementById('admin-chat-target').innerText = nodeId;
         document.getElementById('admin-chat-modal').style.display = 'flex';
-
-        // Tampilkan status gas fee di header chat
         let isVerif = verifiedUsersMap[nodeId];
         const gasStatusEl = document.getElementById('admin-chat-gas-status');
         if (isVerif !== undefined) {
-            gasStatusEl.innerHTML = `<span class="cs-gas-badge ${isVerif ? 'verified' : 'unverified'}">
-                <i class='bx ${isVerif ? 'bx-check-circle' : 'bx-time'}'></i>
-                ${isVerif ? 'Sudah Gas Fee' : 'Belum Gas Fee'}
-            </span>`;
-        } else {
-            gasStatusEl.innerHTML = '';
-        }
-
-        // Reset unread count saat admin buka chat
-        dbChat.collection('chats').doc(nodeId).update({
-            unread_admin: false,
-            unread_count: 0
-        }).catch(() => {});
-
+            gasStatusEl.innerHTML = `<span class="cs-gas-badge ${isVerif ? 'verified' : 'unverified'}"><i class='bx ${isVerif ? 'bx-check-circle' : 'bx-time'}'></i>${isVerif ? 'Sudah Gas Fee' : 'Belum Gas Fee'}</span>`;
+        } else { gasStatusEl.innerHTML = ''; }
+        dbChat.collection('chats').doc(nodeId).update({ unread_admin: false, unread_count: 0 }).catch(() => {});
         const chatBox = document.getElementById('admin-chat-box');
         chatBox.innerHTML = '';
-
         if (adminChatUnsubscribe) adminChatUnsubscribe();
-
-        // Real-time listener riwayat chat
         adminChatUnsubscribe = dbChat.collection('chats').doc(nodeId).collection('messages')
             .orderBy('timestamp', 'asc')
             .onSnapshot((snapshot) => {
@@ -1176,7 +1220,6 @@
                         const timeStr = msgTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
                         bubble.innerHTML = `${msg.text}<div style="font-size:9px;opacity:0.7;margin-top:4px;text-align:right;">${timeStr}</div>`;
                         chatBox.appendChild(bubble);
-                        // Scroll ke bawah setiap ada pesan baru
                         requestAnimationFrame(() => { chatBox.scrollTop = chatBox.scrollHeight; });
                     }
                 });
@@ -1193,48 +1236,28 @@
         const input = document.getElementById('admin-cs-input');
         const text  = input.value.trim();
         if (!text || !adminActiveNode) return;
-
         dbChat.collection('chats').doc(adminActiveNode).collection('messages').add({
-            sender: 'admin',
-            text: text,
-            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            sender: 'admin', text: text, timestamp: firebase.firestore.FieldValue.serverTimestamp()
         });
-
         dbChat.collection('chats').doc(adminActiveNode).set({
-            last_message: "Admin: " + text,
-            last_updated: firebase.firestore.FieldValue.serverTimestamp()
+            last_message: "Admin: " + text, last_updated: firebase.firestore.FieldValue.serverTimestamp()
         }, { merge: true });
-
         input.value = '';
-
-        // Scroll ke bawah setelah kirim
         const chatBox = document.getElementById('admin-chat-box');
         requestAnimationFrame(() => { chatBox.scrollTop = chatBox.scrollHeight; });
     }
 
-    // ── HAPUS SEMUA PESAN (bukan node ID) ─────────────────────
     function openDeleteMessagesModal() {
         if (!adminActiveNode) return;
-
-        // Cek apakah ada pesan yang belum dibaca (unread_admin masih true)
-        // Ambil langsung dari Firestore
         dbChat.collection('chats').doc(adminActiveNode).get().then(doc => {
             if (doc.exists) {
                 const d = doc.data();
-                const unreadCount = d.unread_count || 0;
-                const unreadAdmin = d.unread_admin || false;
-
-                if (unreadAdmin || unreadCount > 0) {
-                    showToast("Masih ada " + (unreadCount || 1) + " pesan belum dibaca. Buka & baca dulu.", "error");
-                    return;
-                }
-                // Kalau tidak ada unread, buka modal konfirmasi
+                if (d.unread_admin || d.unread_count > 0) { showToast("Masih ada pesan belum dibaca.", "error"); return; }
                 currentDeleteMsgId = adminActiveNode;
                 document.getElementById('deleteMsgTargetId').innerText = adminActiveNode;
                 openModal('deleteMsgModal');
             }
         }).catch(() => {
-            // Fallback: langsung buka modal jika gagal cek
             currentDeleteMsgId = adminActiveNode;
             document.getElementById('deleteMsgTargetId').innerText = adminActiveNode;
             openModal('deleteMsgModal');
@@ -1245,45 +1268,22 @@
         if (!currentDeleteMsgId) return;
         closeModal('deleteMsgModal');
         showToast("Menghapus semua pesan...", "info");
-
         try {
-            // Hentikan listener dulu agar tidak re-render saat hapus
             if (adminChatUnsubscribe) { adminChatUnsubscribe(); adminChatUnsubscribe = null; }
-
             const messagesRef = dbChat.collection('chats').doc(currentDeleteMsgId).collection('messages');
             const snapshot    = await messagesRef.get();
-
-            let batch = dbChat.batch();
-            let count = 0;
+            let batch = dbChat.batch(); let count = 0;
             snapshot.forEach(doc => {
-                batch.delete(doc.ref);
-                count++;
-                // Firestore batch max 500 ops
-                if (count % 499 === 0) {
-                    batch.commit();
-                    batch = dbChat.batch();
-                }
+                batch.delete(doc.ref); count++;
+                if (count % 499 === 0) { batch.commit(); batch = dbChat.batch(); }
             });
             await batch.commit();
-
-            // Update dokumen parent: kosongkan last_message tapi JANGAN hapus node
             await dbChat.collection('chats').doc(currentDeleteMsgId).set({
-                last_message: '',
-                last_updated: firebase.firestore.FieldValue.serverTimestamp(),
-                unread_admin: false,
-                unread_count: 0
+                last_message: '', last_updated: firebase.firestore.FieldValue.serverTimestamp(), unread_admin: false, unread_count: 0
             }, { merge: true });
-
-            // Kosongkan chat box UI
             document.getElementById('admin-chat-box').innerHTML = '';
-
             showToast("Semua pesan berhasil dihapus!", "success");
-        } catch (err) {
-            showToast("Gagal menghapus pesan: " + err.message, "error");
-            console.error(err);
-        }
-
-        // Pasang ulang listener
+        } catch (err) { showToast("Gagal menghapus pesan: " + err.message, "error"); }
         if (adminActiveNode === currentDeleteMsgId) {
             const chatBox = document.getElementById('admin-chat-box');
             adminChatUnsubscribe = dbChat.collection('chats').doc(adminActiveNode).collection('messages')
@@ -1291,26 +1291,185 @@
                 .onSnapshot((snapshot) => {
                     snapshot.docChanges().forEach((change) => {
                         if (change.type === "added") {
-                            const msg     = change.doc.data();
-                            const msgTime = msg.timestamp ? msg.timestamp.toDate() : new Date();
-                            const bubble  = document.createElement('div');
+                            const msg = change.doc.data(); const msgTime = msg.timestamp ? msg.timestamp.toDate() : new Date();
+                            const bubble = document.createElement('div');
                             bubble.className = `chat-bubble ${msg.sender === 'admin' ? 'user' : 'admin'}`;
-                            const timeStr = msgTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-                            bubble.innerHTML = `${msg.text}<div style="font-size:9px;opacity:0.7;margin-top:4px;text-align:right;">${timeStr}</div>`;
+                            bubble.innerHTML = `${msg.text}<div style="font-size:9px;opacity:0.7;margin-top:4px;text-align:right;">${msgTime.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'})}</div>`;
                             chatBox.appendChild(bubble);
                             requestAnimationFrame(() => { chatBox.scrollTop = chatBox.scrollHeight; });
                         }
                     });
                 });
         }
-
         currentDeleteMsgId = null;
+    }
+
+    // ══════════════════════════════════════════════════════════
+    //  PURGE SEMUA DATA — FUNGSI UTAMA
+    // ══════════════════════════════════════════════════════════
+
+    function onPurgeInputChange(el) {
+        const val = el.value.trim();
+        const btn = document.getElementById('btnPurgeConfirm');
+        if (val === 'HAPUS SEMUA') {
+            el.classList.add('valid');
+            btn.classList.add('enabled');
+        } else {
+            el.classList.remove('valid');
+            btn.classList.remove('enabled');
+        }
+    }
+
+    function openPurgeModal() {
+        // Tutup sidebar dulu
+        document.getElementById('sidebar').classList.remove('show');
+        document.getElementById('sidebarOverlay').classList.remove('show');
+        // Reset input
+        const inp = document.getElementById('purgeConfirmInput');
+        inp.value = '';
+        onPurgeInputChange(inp);
+        openModal('purgeModal');
+    }
+
+    // Tambah baris log ke progress overlay
+    function purgeLog(text, type = '') {
+        const log = document.getElementById('purgeLog');
+        const line = document.createElement('div');
+        line.className = 'purge-log-line' + (type ? ' ' + type : '');
+        line.textContent = text;
+        log.appendChild(line);
+        log.scrollTop = log.scrollHeight;
+    }
+
+    function purgeSetProgress(pct) {
+        document.getElementById('purgeBar').style.width = pct + '%';
+    }
+
+    // Hapus sub-koleksi messages + dokumen parent di Firestore
+    async function deleteFirebaseChatNode(nodeId) {
+        try {
+            const messagesRef = dbChat.collection('chats').doc(nodeId).collection('messages');
+            const snap = await messagesRef.get();
+            let batch = dbChat.batch(); let cnt = 0;
+            snap.forEach(doc => {
+                batch.delete(doc.ref); cnt++;
+                if (cnt % 499 === 0) { batch.commit(); batch = dbChat.batch(); }
+            });
+            if (cnt > 0 || snap.size > 0) await batch.commit();
+            await dbChat.collection('chats').doc(nodeId).delete();
+            return true;
+        } catch (e) { return false; }
+    }
+
+    async function confirmPurgeAll() {
+        if (document.getElementById('purgeConfirmInput').value.trim() !== 'HAPUS SEMUA') return;
+
+        closeModal('purgeModal');
+
+        const overlay = document.getElementById('purgeProgressOverlay');
+        overlay.classList.add('show');
+        document.getElementById('purgeLog').innerHTML = '';
+        purgeSetProgress(0);
+
+        purgeLog('⚡ Memulai proses purge total...');
+
+        // ── STEP 1: Ambil semua node_id dari Supabase ─────────
+        purgeLog('📡 Mengambil daftar Node ID dari Supabase...');
+        const { data: allUsers } = await supabaseClient.from('users').select('node_id');
+        const nodeIds = allUsers ? allUsers.map(u => u.node_id) : [];
+        purgeLog(`✓ Ditemukan ${nodeIds.length} Node ID`, 'done');
+        purgeSetProgress(5);
+
+        // ── STEP 2: Hapus semua chat Firebase (per node) ──────
+        purgeLog(`🔥 Membersihkan Firebase Firestore...`);
+        let fbDone = 0;
+        for (const nid of nodeIds) {
+            const ok = await deleteFirebaseChatNode(nid);
+            fbDone++;
+            purgeLog(`  ${ok ? '✓' : '✗'} [Firebase] Chat ${nid}`, ok ? 'done' : 'err');
+            purgeSetProgress(5 + Math.round((fbDone / Math.max(nodeIds.length, 1)) * 25));
+        }
+        // Hapus orphan chat (ada di Firebase tapi tidak di Supabase)
+        try {
+            const allChats = await dbChat.collection('chats').get();
+            for (const doc of allChats.docs) {
+                if (!nodeIds.includes(doc.id)) {
+                    await deleteFirebaseChatNode(doc.id);
+                    purgeLog(`  ✓ [Firebase] Orphan chat ${doc.id}`, 'done');
+                }
+            }
+        } catch(e) { purgeLog('  ⚠ Orphan chat skip: ' + e.message, 'err'); }
+        purgeSetProgress(30);
+        purgeLog('✓ Firebase bersih', 'done');
+
+        // ── STEP 3: Hapus semua tabel Supabase ────────────────
+        // Setiap tabel pakai filter kolom yang sesuai dengan schema aktual
+        // Urutan: child tables dulu, parent (users) terakhir
+        const tables = [
+            // tabel,                  label,                    kolom filter,  nilai filter
+            ['affiliate_withdrawals', 'Riwayat Komisi Afiliasi', 'trx_id',     null ],
+            ['withdrawals',           'Riwayat Withdrawal',      'trx_id',     null ],
+            ['gas_fee_payments',      'Riwayat Gas Fee',         'id',         null ],
+            ['users',                 'Semua Node ID & Akun',    'node_id',    null ],
+        ];
+
+        let tblIdx = 0;
+        for (const [tblName, label, col] of tables) {
+            purgeLog(`🗑  Menghapus [${label}]...`);
+
+            // Strategi: coba beberapa filter yang pasti selalu true
+            // untuk memaksa Supabase menghapus semua baris
+            let deleted = false;
+
+            // Percobaan 1: gt(col, '') atau gt(col, 0) tergantung tipe
+            const isNumericCol = (col === 'id');
+            let res;
+            if (isNumericCol) {
+                res = await supabaseClient.from(tblName).delete().gte(col, 0);
+            } else {
+                res = await supabaseClient.from(tblName).delete().not(col, 'is', null);
+            }
+
+            if (!res.error) {
+                deleted = true;
+            } else {
+                // Percobaan 2: hapus per-node jika tabel punya node_id
+                if (col !== 'node_id' && nodeIds.length > 0) {
+                    let anyErr = false;
+                    for (const nid of nodeIds) {
+                        const r2 = await supabaseClient.from(tblName).delete().eq('node_id', nid);
+                        if (r2.error) anyErr = true;
+                    }
+                    deleted = !anyErr;
+                }
+                if (!deleted) purgeLog(`  ✗ ${label}: ${res.error.message}`, 'err');
+            }
+
+            if (deleted) purgeLog(`  ✓ ${label} berhasil dihapus semua`, 'done');
+
+            tblIdx++;
+            purgeSetProgress(30 + Math.round((tblIdx / tables.length) * 68));
+        }
+
+        purgeSetProgress(100);
+        purgeLog('');
+        purgeLog('✅ PURGE SELESAI — Database bersih total!', 'done');
+
+        // Reset state lokal
+        globalUsersData  = [];
+        verifiedUsersMap = {};
+
+        setTimeout(() => {
+            overlay.classList.remove('show');
+            showToast("Semua data & riwayat berhasil dihapus!", "success");
+            loadUsers();
+        }, 2800);
     }
 
     // ── INIT ───────────────────────────────────────────────────
     document.addEventListener('DOMContentLoaded', () => {
         loadUsers();
-        syncVerifiedMap(); // Pre-load map untuk CS
+        syncVerifiedMap();
     });
 </script>
 </body>
